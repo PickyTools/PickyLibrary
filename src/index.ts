@@ -5,6 +5,7 @@ export { default as BaseButton } from './components/BaseButton.vue';
 export { default as BaseCheckbox } from './components/BaseCheckbox.vue';
 export { default as BaseIcon } from './components/BaseIcon.vue';
 export { default as BaseInput } from './components/BaseInput.vue';
+export { default as BaseModal } from './components/BaseModal.vue';
 export { default as BasePasswordInput } from './components/BasePasswordInput.vue';
 export { default as BaseSwitch } from './components/BaseSwitch.vue';
 export { default as BasePill } from './components/BasePill.vue';
