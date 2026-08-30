@@ -1,0 +1,143 @@
+/* PickyLibrary — stylesheet
+ *
+ * Alles wordt geprefixt met `picky`. Dat doet dubbel werk: utility-klassen worden
+ * `picky:flex`, en theme-tokens worden `--picky-color-primary-500`. Die tokens zijn
+ * het publieke contract — overschrijf ze in je eigen `:root` en de hele library volgt.
+ *
+ * Bewust GEEN preflight: een library hoort de reset van de consument niet te overrulen.
+ */
+
+/* Eigen cascade-layers. Twee redenen:
+ *  - Ongelaagde CSS wint altijd van gelaagde CSS, ongeacht importvolgorde. Een
+ *    consument die `--picky-*` in zijn eigen `:root` zet wint dus altijd — ook als
+ *    zijn stylesheet eerder laadt dan de onze.
+ *  - Eigen namen (niet `theme`/`utilities`) zodat we niet samensmelten met de
+ *    Tailwind-layers van een consument die zelf ook Tailwind draait. */
+@layer picky-theme, picky-utilities;
+
+@import 'tailwindcss/theme.css' layer(picky-theme) prefix(picky);
+@import 'tailwindcss/utilities.css' layer(picky-utilities);
+
+/* Dark mode werkt out-of-the-box op de systeemvoorkeur, en is te overrulen met een
+ * class. `.dark` forceert donker, `.light` forceert licht (ook als het OS donker wil).
+ * Zo hoeft een consument niets te configureren, maar kan hij wel een toggle bouwen. */
+@custom-variant dark {
+    @media (prefers-color-scheme: dark) {
+        &:where(:not(.light, .light *)) {
+            @slot;
+        }
+    }
+    &:where(.dark, .dark *) {
+        @slot;
+    }
+}
+
+@theme static {
+    /* ── Primary ────────────────────────────────────────────────
+       Overschrijf met --picky-color-primary-500 etc. */
+    --color-primary-50: #eff6ff;
+    --color-primary-100: #dbeafe;
+    --color-primary-200: #bfdbfe;
+    --color-primary-300: #93c5fd;
+    --color-primary-400: #60a5fa;
+    --color-primary-500: #3b82f6;
+    --color-primary-600: #2563eb;
+    --color-primary-700: #1d4ed8;
+    --color-primary-800: #1e40af;
+    --color-primary-900: #1e3a8a;
+    --color-primary-950: #172554;
+    /* Tekstkleur bovenop een primary-vlak. */
+    --color-primary-text: #ffffff;
+
+    /* ── Secondary ─────────────────────────────────────────────── */
+    --color-secondary-50: #f8fafc;
+    --color-secondary-100: #f1f5f9;
+    --color-secondary-200: #e2e8f0;
+    --color-secondary-300: #cbd5e1;
+    --color-secondary-400: #94a3b8;
+    --color-secondary-500: #64748b;
+    --color-secondary-600: #475569;
+    --color-secondary-700: #334155;
+    --color-secondary-800: #1e293b;
+    --color-secondary-900: #0f172a;
+    --color-secondary-950: #020617;
+    --color-secondary-text: #ffffff;
+
+    /* ── Oppervlakken ───────────────────────────────────────────
+       light-surface draagt de lichte modus, dark-surface de donkere. */
+    --color-light-surface-50: #ffffff;
+    --color-light-surface-100: #fafafa;
+    --color-light-surface-200: #f4f4f5;
+    --color-light-surface-300: #e4e4e7;
+    --color-light-surface-400: #d4d4d8;
+    --color-light-surface-500: #a1a1aa;
+    --color-light-surface-600: #71717a;
+    --color-light-surface-700: #52525b;
+    --color-light-surface-800: #3f3f46;
+    --color-light-surface-900: #27272a;
+    --color-light-surface-950: #18181b;
+
+    --color-dark-surface-50: #fafaf9;
+    --color-dark-surface-100: #f5f5f4;
+    --color-dark-surface-200: #e7e5e4;
+    --color-dark-surface-300: #d6d3d1;
+    --color-dark-surface-400: #a8a29e;
+    --color-dark-surface-500: #78716c;
+    --color-dark-surface-600: #57534e;
+    --color-dark-surface-700: #44403c;
+    --color-dark-surface-800: #292524;
+    --color-dark-surface-900: #1c1917;
+    --color-dark-surface-950: #0c0a09;
+
+    /* ── Semantische tekstkleuren ───────────────────────────────
+       Gebruik text-text-heading / body / muted / caption; nooit rauwe
+       dark:text-* paren, want die volgen de tokens niet. */
+    --color-text-heading: #111827;
+    --color-text-body: #374151;
+    --color-text-muted: #6b7280;
+    --color-text-caption: #6a6f78;
+
+    /* ── Focus ──────────────────────────────────────────────────
+       Zichtbare focusindicatie is geen optie maar een eis (WCAG 2.4.7).
+       Deze defaults werken zonder configuratie; overschrijf ze gerust,
+       maar zet ze niet op transparent. */
+    --color-focus-ring: #3b82f6;
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
+
+    /* ── Radii ──────────────────────────────────────────────────
+       Vier tokens sturen de hele library. */
+    --radius-button: 0.5rem;
+    --radius-container: 1rem;
+    --radius-inner-container: 0.5rem;
+    --radius-small: 0.375rem;
+    --radius-switch-track: 16px;
+    --radius-switch-knob: 12px;
+
+    /* ── Typografie ─────────────────────────────────────────────
+       Alleen voor koppen binnen de library; body-tekst erft van je app. */
+    --font-heading: inherit;
+    --font-weight-heading: 600;
+}
+
+/* Semantische tekstkleuren in donkere modus. Gedefinieerd op :root zodat ze
+   het @theme-blok overschrijven, en achter dezelfde variant als alle andere
+   dark-styling zodat class en systeemvoorkeur allebei werken. */
+@layer base {
+    @media (prefers-color-scheme: dark) {
+        :root:where(:not(.light)) {
+            --picky-color-text-heading: var(--picky-color-dark-surface-100);
+            --picky-color-text-body: var(--picky-color-dark-surface-200);
+            --picky-color-text-muted: var(--picky-color-dark-surface-400);
+            --picky-color-text-caption: var(--picky-color-dark-surface-400);
+        }
+    }
+
+    :root:where(.dark),
+    .dark {
+        --picky-color-text-heading: var(--picky-color-dark-surface-100);
+        --picky-color-text-body: var(--picky-color-dark-surface-200);
+        --picky-color-text-muted: var(--picky-color-dark-surface-400);
+        --picky-color-text-caption: var(--picky-color-dark-surface-400);
+    }
+}

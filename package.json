@@ -1,0 +1,64 @@
+{
+  "name": "pickylibrary",
+  "version": "0.0.0",
+  "description": "Accessible, themeable Vue 3 base components. Bring your own icons, style it with CSS variables.",
+  "license": "MIT",
+  "author": "Jochum <jochumjurre@protonmail.com>",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/pickylibrary.js",
+  "module": "./dist/pickylibrary.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/pickylibrary.js"
+    },
+    "./style.css": "./dist/style.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "@floating-ui/vue": "^1.1.11"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.8.7",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.1.1",
+    "vue": "^3.5.30",
+    "vue-tsc": "^3.3.5"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "components",
+    "ui",
+    "accessible",
+    "a11y",
+    "design-system",
+    "themeable"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
