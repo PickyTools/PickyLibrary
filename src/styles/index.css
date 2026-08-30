@@ -13,7 +13,7 @@
  *    zijn stylesheet eerder laadt dan de onze.
  *  - Eigen namen (niet `theme`/`utilities`) zodat we niet samensmelten met de
  *    Tailwind-layers van een consument die zelf ook Tailwind draait. */
-@layer picky-theme, picky-utilities;
+@layer picky-theme, picky-components, picky-utilities;
 
 @import 'tailwindcss/theme.css' layer(picky-theme) prefix(picky);
 @import 'tailwindcss/utilities.css' layer(picky-utilities);
@@ -29,6 +29,84 @@
     }
     &:where(.dark, .dark *) {
         @slot;
+    }
+}
+
+/* Schaduwstijl. Zet `data-picky-shadow` op <html>, of op een willekeurige voorouder
+ * (of op het component zelf) om een deel af te laten wijken. Zonder attribuut: soft.
+ *
+ * Bewust via custom properties in plaats van selectors: custom properties erven van
+ * de *dichtstbijzijnde* voorouder die ze zet. Met descendant-selectors zouden een
+ * voorouder op `hard` en een knop op `soft` allebei matchen en zou bronvolgorde
+ * beslissen in plaats van nabijheid — precies verkeerd. Zo is de schaduwstijl puur
+ * CSS én correct nestbaar, zonder een regel JavaScript. */
+:root {
+    /* Standaard: soft. Vorm en dekking staan los van de kleur — zie de opmerking
+       bij .picky-pressable waarom dat moet. */
+    --picky-shadow-color: currentcolor;
+    --picky-shadow-offset: 0 10px 15px -3px;
+    --picky-shadow-alpha: 15%;
+    --picky-press-offset: 0 10px 15px -3px;
+    --picky-press-alpha: 15%;
+    --picky-press-transform: scale(0.96);
+}
+
+[data-picky-shadow='soft'] {
+    --picky-shadow-offset: 0 10px 15px -3px;
+    --picky-shadow-alpha: 15%;
+    --picky-press-offset: 0 10px 15px -3px;
+    --picky-press-alpha: 15%;
+    --picky-press-transform: scale(0.96);
+}
+
+[data-picky-shadow='hard'] {
+    --picky-shadow-offset: 0 4px 0 0;
+    --picky-shadow-alpha: 40%;
+    --picky-press-offset: 0 0 0 0;
+    --picky-press-alpha: 0%;
+    --picky-press-transform: scaleY(0.95) translateY(0.25rem);
+}
+
+[data-picky-shadow='none'] {
+    --picky-shadow-offset: 0 0 0 0;
+    --picky-shadow-alpha: 0%;
+    --picky-press-offset: 0 0 0 0;
+    --picky-press-alpha: 0%;
+    --picky-press-transform: scale(0.96);
+}
+
+@layer picky-components {
+    /* De color-mix staat hier en niet in een custom property hierboven. Reden:
+       `var()` binnen een custom property wordt gesubstitueerd op het element waar
+       die property gedeclareerd is. Zou --picky-shadow de kleur al mengen, dan
+       gebeurde dat op <html> — waar --picky-shadow-color nog `currentcolor` is —
+       en zou de kleur die het component zelf zet nooit aankomen. Door alleen vorm
+       en dekking te laten erven en pas hier te mengen, klopt zowel de nabijheid
+       (via erfelijkheid) als de kleur (via het component). */
+    .picky-pressable {
+        box-shadow: var(--picky-shadow-offset)
+            color-mix(in oklab, var(--picky-shadow-color) var(--picky-shadow-alpha), transparent);
+        transition: transform 100ms;
+    }
+
+    .picky-pressable:active {
+        box-shadow: var(--picky-press-offset)
+            color-mix(in oklab, var(--picky-shadow-color) var(--picky-press-alpha), transparent);
+        transform: var(--picky-press-transform);
+    }
+
+    [aria-disabled='true'] .picky-pressable,
+    [aria-disabled='true'] .picky-pressable:active {
+        box-shadow: none;
+        transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .picky-pressable,
+        .picky-pressable:active {
+            transition: none;
+            transform: none;
+        }
     }
 }
 
