@@ -8,7 +8,12 @@ export default defineConfig({
     plugins: [
         vue(),
         tailwindcss(),
-        dts({ include: ['src'], rollupTypes: false, tsconfigPath: './tsconfig.build.json' }),
+        dts({
+            include: ['src'],
+            // Tests horen niet in het pakket dat een consument installeert.
+            exclude: ['src/**/*.test.ts'],
+            tsconfigPath: './tsconfig.build.json',
+        }),
     ],
     resolve: {
         alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
