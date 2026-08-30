@@ -99,6 +99,11 @@ type InputType =
 // class/style horen op de wortel, alle overige attributen op het veld zelf.
 defineOptions({ name: 'BaseInput', inheritAttrs: false });
 
+defineSlots<{
+    prefix(): unknown;
+    suffix(): unknown;
+}>();
+
 const props = withDefaults(
     defineProps<
         HasSize &
@@ -244,7 +249,7 @@ const paddingClasses = computed(() => [
 ]);
 
 const fieldClasses =
-    'picky-input-field picky:min-w-0 picky:flex-1 picky:appearance-none picky:border-0 picky:bg-transparent picky:text-inherit picky:placeholder:text-neutral-400 picky:dark:placeholder:text-dark-surface-500 picky:read-only:cursor-default';
+    'picky-reset picky-input-field picky:min-w-0 picky:flex-1 picky:appearance-none picky:border-0 picky:bg-transparent picky:text-inherit picky:placeholder:text-neutral-400 picky:dark:placeholder:text-dark-surface-500 picky:read-only:cursor-default';
 
 const baseState =
     'picky:bg-transparent picky:text-neutral-900 picky:dark:text-dark-surface-100 picky:[--picky-input-text:var(--picky-color-neutral-900)] picky:dark:[--picky-input-text:var(--picky-color-dark-surface-50)]';

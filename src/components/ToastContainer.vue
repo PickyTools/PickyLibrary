@@ -30,9 +30,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import BaseToast from './BaseToast.vue';
-import { useToast } from '../composables/useToast';
+import { useToast, type Toast } from '../composables/useToast';
 
 defineOptions({ name: 'ToastContainer' });
+
+defineSlots<{
+    /** Vervangt de weergave van één toast. */
+    default(props: { toast: Toast; close: (id: number) => void }): unknown;
+}>();
 
 const props = withDefaults(
     defineProps<{

@@ -50,6 +50,13 @@ type CheckboxColor = 'primary' | 'secondary' | 'danger';
 
 defineOptions({ name: 'BaseCheckbox' });
 
+defineSlots<{
+    /** Vervangt het label; blijft naast het vakje staan. */
+    default(): unknown;
+    /** Vervangt het vinkje. Alleen gerenderd wanneer aangevinkt. */
+    indicator(): unknown;
+}>();
+
 withDefaults(
     defineProps<
         HasSize &

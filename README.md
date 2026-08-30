@@ -56,6 +56,25 @@ provideIcons((code, variant) => `/icons/${variant ?? 'solid'}/${code}.svg`);
 
 Components that don't render icons need no resolver at all.
 
+## Components
+
+`BaseButton`, `BaseInput`, `BasePasswordInput`, `BaseCheckbox`, `BaseSwitch`, `BaseSelect`,
+`BaseModal`, `BaseAlert`, `BasePill`, `BaseIcon`, `BaseToast` and `ToastContainer`, plus the
+`useToast` composable.
+
+Every component types its slots, so replacing a part — an alert's icon, a select's whole
+dropdown, a checkbox's tick — is autocompleted rather than guessed.
+
+## Example
+
+`example/` is a working consumer app: a kitchen sink of every component, with live controls
+for shadow style, corner radius, accent colour and dark mode. It pulls icons from two sources
+at once — Lucide components and raw Simple Icons SVG — to show that one resolver covers both.
+
+```bash
+cd example && npm install && npm run dev
+```
+
 ## Browser support
 
 Modern evergreen browsers. The stylesheet uses cascade layers and `color-mix()`.

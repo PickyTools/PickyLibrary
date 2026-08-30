@@ -76,6 +76,26 @@
 }
 
 @layer picky-components {
+    /* PickyLibrary stuurt bewust geen preflight mee: een library hoort de reset van
+       de consument niet te overrulen. Maar zonder reset komt de native browserstyling
+       van <button> en <input> door de componenten heen — een grijze vulling, een
+       tweede rand, een ander lettertype. Daarom neutraliseren we uitsluitend de
+       elementen die we zelf renderen, en niets daarbuiten. */
+    .picky-reset {
+        appearance: none;
+        -webkit-appearance: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        line-height: inherit;
+        letter-spacing: inherit;
+        text-align: inherit;
+        text-transform: inherit;
+    }
+
     /* De color-mix staat hier en niet in een custom property hierboven. Reden:
        `var()` binnen een custom property wordt gesubstitueerd op het element waar
        die property gedeclareerd is. Zou --picky-shadow de kleur al mengen, dan

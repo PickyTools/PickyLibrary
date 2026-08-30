@@ -14,7 +14,7 @@
         <button
             type="button"
             :aria-label="closeLabel"
-            class="picky:flex picky:h-6 picky:w-6 picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:self-start picky:rounded-md picky:bg-white/20 picky:opacity-60 picky:hover:opacity-100 picky:motion-safe:transition-opacity picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2"
+            class="picky-reset picky:flex picky:h-6 picky:w-6 picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:self-start picky:rounded-md picky:bg-white/20 picky:opacity-60 picky:hover:opacity-100 picky:motion-safe:transition-opacity picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2"
             @click="emit('close', toast.id)"
         >
             <slot name="close-icon">
@@ -29,6 +29,13 @@ import BaseIcon from './BaseIcon.vue';
 import type { Toast, ToastStyle } from '../composables/useToast';
 
 defineOptions({ name: 'BaseToast' });
+
+defineSlots<{
+    /** Vervangt het icoon van de toast. */
+    icon(): unknown;
+    /** Vervangt het icoon in de sluitknop. */
+    'close-icon'(): unknown;
+}>();
 
 withDefaults(
     defineProps<{

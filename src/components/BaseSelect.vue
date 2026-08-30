@@ -91,13 +91,19 @@
     </div>
 </template>
 
-<script setup lang="ts" generic="T extends string | number = string">
+<script setup lang="ts" generic="T extends string | number = string, O extends SelectOption<T> = SelectOption<T>">
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import { autoUpdate, flip, offset, shift, size as sizeMiddleware, useFloating } from '@floating-ui/vue';
 import BaseButton from './BaseButton.vue';
 import BaseIcon from './BaseIcon.vue';
 import type { Size } from '../types';
 
+/**
+ * Een optie heeft minimaal een label en een waarde. Hang er gerust eigen velden
+ * aan: BaseSelect is generiek over het optietype, dus die velden komen getypeerd
+ * terug in de slots. Er staat bewust géén index-signature op — die accepteerde
+ * elke property en controleerde dus niets, ook een typefout in `label` niet.
+ */
 export interface SelectOption<Value = string> {
     label: string;
     value: Value;
@@ -116,7 +122,7 @@ defineOptions({ name: 'BaseSelect', inheritAttrs: true });
 const props = withDefaults(
     defineProps<{
         modelValue: T;
-        options: SelectOption<T>[];
+        options: O[];
         label?: string;
         placeholder?: string;
         size?: Size;
@@ -158,10 +164,10 @@ const props = withDefaults(
 const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>();
 
 defineSlots<{
-    default(props: { option: SelectOption<T> | undefined; open: boolean }): unknown;
-    prefix(props: { option: SelectOption<T> | undefined }): unknown;
-    suffix(props: { option: SelectOption<T> | undefined; open: boolean }): unknown;
-    option(props: { option: SelectOption<T>; active: boolean }): unknown;
+    default(props: { option: O | undefined; open: boolean }): unknown;
+    prefix(props: { option: O | undefined }): unknown;
+    suffix(props: { option: O | undefined; open: boolean }): unknown;
+    option(props: { option: O; active: boolean }): unknown;
     dropdown(props: {
         close: () => void;
         activeIndex: number;
@@ -251,7 +257,7 @@ function scrollActiveIntoView(): void {
     });
 }
 
-function select(option: SelectOption<T> | undefined): void {
+function select(option: O | undefined): void {
     if (!option || option.disabled) return;
     emit('update:modelValue', option.value);
     close();

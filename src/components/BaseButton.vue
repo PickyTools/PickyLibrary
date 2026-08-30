@@ -11,7 +11,7 @@
         :aria-disabled="disabled || undefined"
         :aria-label="resolvedAriaLabel"
         :data-picky-shadow="shadow"
-        :class="['picky:group picky:rounded-md', $attrs.class]"
+        :class="['picky-reset picky:group picky:inline-flex picky:rounded-md', $attrs.class]"
         v-bind="rest"
         @click="handleClick"
     >
@@ -33,6 +33,13 @@ type ButtonColor = 'primary' | 'secondary' | 'success' | 'danger' | 'gray' | 'cu
 type ButtonShadow = 'hard' | 'soft' | 'none';
 
 defineOptions({ name: 'BaseButton', inheritAttrs: false });
+
+defineSlots<{
+    /** Vervangt het label. Geef dan ook `label` mee als toegankelijke naam. */
+    default(): unknown;
+    prefix(): unknown;
+    suffix(): unknown;
+}>();
 
 const props = withDefaults(
     defineProps<
@@ -179,7 +186,9 @@ const originMap: Record<'all' | 'left' | 'right' | 'none', string> = {
 };
 
 const innerClasses = computed(() => [
-    'picky:flex picky:w-full picky:items-center picky:justify-center picky:gap-x-2 picky:relative picky:cursor-pointer',
+    // flex-1 in plaats van w-full: `width: 100%` tegen een knop die zichzelf op zijn
+    // inhoud dimensioneert is circulair, waardoor de binnenkant buiten de knop stak.
+    'picky:flex picky:flex-1 picky:items-center picky:justify-center picky:gap-x-2 picky:relative picky:cursor-pointer',
     'picky:motion-safe:transition-all picky:motion-safe:duration-100 picky:motion-safe:ease-in-out',
     sizeMap[props.size],
     variantColorMap[props.variant][props.color],

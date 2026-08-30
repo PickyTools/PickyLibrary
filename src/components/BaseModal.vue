@@ -24,7 +24,7 @@
                         v-if="dismissible"
                         type="button"
                         :aria-label="closeLabel"
-                        class="picky:ml-auto picky:flex picky:h-8 picky:w-8 picky:cursor-pointer picky:items-center picky:justify-center picky:rounded-md picky:text-text-muted picky:hover:bg-neutral-100 picky:hover:text-text-heading picky:dark:hover:bg-dark-surface-700 picky:motion-safe:transition-colors picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2 picky:focus-visible:outline-[var(--picky-color-focus-ring)]"
+                        class="picky-reset picky:ml-auto picky:flex picky:h-8 picky:w-8 picky:cursor-pointer picky:items-center picky:justify-center picky:rounded-md picky:text-text-muted picky:hover:bg-neutral-100 picky:hover:text-text-heading picky:dark:hover:bg-dark-surface-700 picky:motion-safe:transition-colors picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2 picky:focus-visible:outline-[var(--picky-color-focus-ring)]"
                         @click="close"
                     >
                         <slot name="close-icon">
@@ -62,6 +62,14 @@ import { lockBodyScroll, unlockBodyScroll } from '../internal/scrollLock';
  * en de vorige fallback trapte de focus niet en ving Escape niet af.
  */
 defineOptions({ name: 'BaseModal' });
+
+defineSlots<{
+    default(): unknown;
+    /** Vervangt de titel. Zorg dan zelf voor een toegankelijke naam via `ariaLabel`. */
+    title(): unknown;
+    footer(): unknown;
+    'close-icon'(): unknown;
+}>();
 
 const props = withDefaults(
     defineProps<{

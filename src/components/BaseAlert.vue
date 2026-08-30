@@ -19,7 +19,7 @@
                 v-if="dismissible"
                 type="button"
                 :aria-label="closeLabel"
-                class="picky:flex picky:h-6 picky:w-6 picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:self-start picky:rounded picky:opacity-60 picky:hover:opacity-100 picky:motion-safe:transition-opacity picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2"
+                class="picky-reset picky:flex picky:h-6 picky:w-6 picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:self-start picky:rounded picky:opacity-60 picky:hover:opacity-100 picky:motion-safe:transition-opacity picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2"
                 @click="emit('dismiss')"
             >
                 <slot name="close-icon">
@@ -37,6 +37,15 @@ import BaseIcon from './BaseIcon.vue';
 export type AlertType = 'info' | 'warning' | 'error' | 'success';
 
 defineOptions({ name: 'BaseAlert' });
+
+defineSlots<{
+    /** Extra inhoud onder de omschrijving. */
+    default(): unknown;
+    /** Vervangt het type-icoon. */
+    icon(): unknown;
+    /** Vervangt het icoon in de sluitknop. */
+    'close-icon'(): unknown;
+}>();
 
 const props = withDefaults(
     defineProps<{

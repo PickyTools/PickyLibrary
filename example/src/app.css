@@ -1,0 +1,73 @@
+/* Alleen pagina-chrome. De componenten zelf hebben hier niets van nodig. */
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: var(--picky-color-light-surface-100);
+    color: var(--picky-color-text-body);
+}
+
+.dark body,
+:root:not(.light):is(:has(*)) {
+    color-scheme: light dark;
+}
+
+.dark body {
+    background: var(--picky-color-dark-surface-950);
+}
+
+.page {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+}
+
+h1 {
+    color: var(--picky-color-text-heading);
+    font-size: 1.75rem;
+    margin: 0 0 0.25rem;
+}
+
+h2 {
+    color: var(--picky-color-text-heading);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 2.5rem 0 0.75rem;
+}
+
+.lede {
+    color: var(--picky-color-text-muted);
+    margin: 0 0 1rem;
+    max-width: 44rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--picky-color-light-surface-300);
+}
+
+.dark .row {
+    border-top-color: var(--picky-color-dark-surface-700);
+}
+
+.row > .label {
+    flex: 0 0 8rem;
+    font-size: 0.8125rem;
+    color: var(--picky-color-text-caption);
+}
+
+.controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 0;
+    background: inherit;
+}

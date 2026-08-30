@@ -7,7 +7,7 @@
         :aria-labelledby="labelledBy || undefined"
         :disabled="disabled"
         :class="[
-            'picky-pressable picky:group picky:relative picky:flex picky:h-fit picky:w-fit picky:items-center',
+            'picky-reset picky-pressable picky:group picky:relative picky:flex picky:h-fit picky:w-fit picky:items-center',
             'picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2 picky:focus-visible:outline-[var(--picky-color-focus-ring)]',
             disabled ? 'picky:cursor-not-allowed picky:opacity-50' : 'picky:cursor-pointer',
             modelValue
@@ -56,6 +56,11 @@ import BaseIcon from './BaseIcon.vue';
 import type { HasDisabled, HasSize, Size } from '../types';
 
 defineOptions({ name: 'BaseSwitch' });
+
+defineSlots<{
+    /** Inhoud van de knop, bijvoorbeeld een icoon per stand. */
+    knob(props: { checked: boolean }): unknown;
+}>();
 
 /*
  * De schakelaar is een echte <button role="switch">, geen div met handmatige

@@ -22,7 +22,7 @@
                 type="button"
                 :aria-label="visible ? hideLabel : showLabel"
                 :aria-pressed="visible"
-                class="picky:flex picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:rounded picky:p-0.5 picky:text-text-caption picky:transition-colors picky:hover:text-text-muted picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2 picky:focus-visible:outline-[var(--picky-color-focus-ring)]"
+                class="picky-reset picky:flex picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:rounded picky:p-0.5 picky:text-text-caption picky:transition-colors picky:hover:text-text-muted picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2 picky:focus-visible:outline-[var(--picky-color-focus-ring)]"
                 @click="visible = !visible"
                 @mousedown.prevent
             >
@@ -39,6 +39,11 @@ import BaseIcon from './BaseIcon.vue';
 import type { Size } from '../types';
 
 defineOptions({ name: 'BasePasswordInput', inheritAttrs: false });
+
+defineSlots<{
+    prefix(): unknown;
+    suffix(): unknown;
+}>();
 
 withDefaults(
     defineProps<{

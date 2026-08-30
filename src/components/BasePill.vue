@@ -64,4 +64,9 @@ const sizeClasses = computed(() => sizeMap[props.size]);
 const colorClasses = computed(() => colorMap[props.color][props.background]);
 
 defineOptions({ name: 'BasePill' });
+
+defineSlots<{
+    /** Vervangt het label. */
+    default(): unknown;
+}>();
 </script>
