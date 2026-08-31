@@ -1,6 +1,6 @@
 {
   "name": "pickylibrary",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Accessible, themeable Vue 3 base components. Bring your own icons, style it with CSS variables.",
   "license": "MIT",
   "author": "Jochum <jochumjurre@protonmail.com>",
@@ -75,10 +75,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jochumjurre/pickylibrary.git"
+    "url": "git+https://github.com/jochumjurre/PickyLibrary.git"
   },
-  "homepage": "https://github.com/jochumjurre/pickylibrary#readme",
+  "homepage": "https://github.com/jochumjurre/PickyLibrary#readme",
   "bugs": {
-    "url": "https://github.com/jochumjurre/pickylibrary/issues"
+    "url": "https://github.com/jochumjurre/PickyLibrary/issues"
   }
 }
