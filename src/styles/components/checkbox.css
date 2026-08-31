@@ -174,36 +174,38 @@
         --picky-checkbox-line: transparent;
     }
 
-    /* Hover darkens the fill rather than lightening it: the tick stays on top of
-       it, so a lighter fill would drop the pair below 4.5:1. */
+    /* The fill is the accent; hover darkens it rather than lightening it, because
+       the tick sits on top and a lighter fill would drop that pair below 4.5:1. */
+    .picky-checkbox {
+        --picky-checkbox-accent-hover: color-mix(in oklab, var(--picky-checkbox-accent) 85%, black);
+    }
 
     .picky-checkbox[data-color='primary'] {
-        --picky-checkbox-accent: var(--picky-color-primary-600);
-        --picky-checkbox-accent-hover: var(--picky-color-primary-700);
+        --picky-checkbox-accent: var(--picky-color-primary);
+        --picky-checkbox-check: var(--picky-color-primary-text);
     }
     .picky-checkbox[data-color='secondary'] {
-        --picky-checkbox-accent: var(--picky-color-secondary-500);
-        --picky-checkbox-accent-hover: var(--picky-color-secondary-600);
+        --picky-checkbox-accent: var(--picky-color-secondary);
+        --picky-checkbox-check: var(--picky-color-secondary-text);
     }
     .picky-checkbox[data-color='success'] {
-        --picky-checkbox-accent: var(--picky-color-green-700);
-        --picky-checkbox-accent-hover: var(--picky-color-green-800);
+        --picky-checkbox-accent: var(--picky-color-success);
+        --picky-checkbox-check: var(--picky-color-success-text);
     }
     .picky-checkbox[data-color='danger'] {
-        --picky-checkbox-accent: var(--picky-color-red-600);
-        --picky-checkbox-accent-hover: var(--picky-color-red-700);
+        --picky-checkbox-accent: var(--picky-color-danger);
+        --picky-checkbox-check: var(--picky-color-danger-text);
     }
     .picky-checkbox[data-color='warning'] {
-        --picky-checkbox-accent: var(--picky-color-yellow-400);
-        --picky-checkbox-accent-hover: var(--picky-color-yellow-500);
-        --picky-checkbox-check: var(--picky-color-yellow-950);
+        --picky-checkbox-accent: var(--picky-color-warning);
+        --picky-checkbox-check: var(--picky-color-warning-text);
     }
     .picky-checkbox[data-color='info'] {
-        --picky-checkbox-accent: var(--picky-color-teal-700);
-        --picky-checkbox-accent-hover: var(--picky-color-teal-800);
+        --picky-checkbox-accent: var(--picky-color-info);
+        --picky-checkbox-check: var(--picky-color-info-text);
     }
     .picky-checkbox[data-color='gray'] {
-        --picky-checkbox-accent: var(--picky-color-neutral-600);
-        --picky-checkbox-accent-hover: var(--picky-color-neutral-700);
+        --picky-checkbox-accent: var(--picky-color-gray);
+        --picky-checkbox-check: var(--picky-color-gray-text);
     }
 }

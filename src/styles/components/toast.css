@@ -47,7 +47,9 @@
         opacity: 0.8;
     }
 
+    /* Top-aligned, because the text beside it can run to several lines. */
     .picky-toast__close {
+        align-self: flex-start;
         height: 1.5rem;
         width: 1.5rem;
         background-color: color-mix(in oklab, var(--picky-color-white) 20%, transparent);
@@ -61,32 +63,32 @@
     /* ── Styles ────────────────────────────────────────────────────────────── */
 
     .picky-toast[data-style='primary'] {
-        --picky-toast-bg: var(--picky-color-primary-600);
+        --picky-toast-bg: var(--picky-color-primary);
         --picky-toast-text: var(--picky-color-primary-text);
     }
     .picky-toast[data-style='secondary'] {
-        --picky-toast-bg: var(--picky-color-secondary-500);
+        --picky-toast-bg: var(--picky-color-secondary);
         --picky-toast-text: var(--picky-color-secondary-text);
     }
     .picky-toast[data-style='success'] {
-        --picky-toast-bg: var(--picky-color-green-700);
-        --picky-toast-text: var(--picky-color-white);
+        --picky-toast-bg: var(--picky-color-success);
+        --picky-toast-text: var(--picky-color-success-text);
     }
     .picky-toast[data-style='danger'] {
-        --picky-toast-bg: var(--picky-color-red-600);
-        --picky-toast-text: var(--picky-color-white);
+        --picky-toast-bg: var(--picky-color-danger);
+        --picky-toast-text: var(--picky-color-danger-text);
     }
     .picky-toast[data-style='warning'] {
-        --picky-toast-bg: var(--picky-color-yellow-400);
-        --picky-toast-text: var(--picky-color-yellow-950);
+        --picky-toast-bg: var(--picky-color-warning);
+        --picky-toast-text: var(--picky-color-warning-text);
     }
     .picky-toast[data-style='info'] {
-        --picky-toast-bg: var(--picky-color-teal-700);
-        --picky-toast-text: var(--picky-color-white);
+        --picky-toast-bg: var(--picky-color-info);
+        --picky-toast-text: var(--picky-color-info-text);
     }
     .picky-toast[data-style='gray'] {
-        --picky-toast-bg: var(--picky-color-neutral-700);
-        --picky-toast-text: var(--picky-color-white);
+        --picky-toast-bg: var(--picky-color-gray);
+        --picky-toast-text: var(--picky-color-gray-text);
     }
 
     /* ── The regions ────────────────────────────────────────────────────────

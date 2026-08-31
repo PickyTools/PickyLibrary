@@ -9,7 +9,6 @@
     .picky-close-button {
         display: flex;
         flex-shrink: 0;
-        align-self: flex-start;
         align-items: center;
         justify-content: center;
         cursor: pointer;

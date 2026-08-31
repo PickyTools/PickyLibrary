@@ -43,7 +43,13 @@
         cursor: text;
     }
 
-    .picky-input__control:focus-within {
+    /* :has(:focus-visible) rather than :focus-within, so the browser decides when a
+       focus indicator is warranted. Clicking a field gives it a caret, which is
+       indication enough; tabbing to one still shows the ring. It also stops a
+       read-only field from lighting up when you merely click it, while keeping the
+       ring it needs when reached by keyboard (WCAG 2.4.7).
+       Matches how every other component in the library treats focus. */
+    .picky-input__control:has(:focus-visible) {
         outline: 2px solid var(--picky-input-ring);
         outline-offset: 2px;
     }
@@ -112,7 +118,7 @@
         cursor: default;
     }
 
-    /* The focus ring sits on the wrapper (focus-within), so the field itself needs
+    /* The focus ring sits on the wrapper, so the field itself needs
        to show none. Deliberately without !important: this used to be
        `outline: none !important`, which also suppressed a consumer's own focus style
        and Windows' forced-colors mode. */
@@ -282,16 +288,16 @@
         }
     }
 
-    .picky-input:not([data-state='error']) .picky-input__control:focus-within {
+    .picky-input:not([data-state='error']) .picky-input__control:has(:focus-visible) {
         --picky-input-line: var(--picky-color-neutral-500);
     }
 
     @media (prefers-color-scheme: dark) {
-        :root:not(.light) .picky-input:not([data-state='error']) .picky-input__control:focus-within {
+        :root:not(.light) .picky-input:not([data-state='error']) .picky-input__control:has(:focus-visible) {
             --picky-input-line: var(--picky-color-dark-surface-300);
         }
     }
-    .dark .picky-input:not([data-state='error']) .picky-input__control:focus-within {
+    .dark .picky-input:not([data-state='error']) .picky-input__control:has(:focus-visible) {
         --picky-input-line: var(--picky-color-dark-surface-300);
     }
 
@@ -306,9 +312,11 @@
         --picky-input-line: var(--picky-color-neutral-300);
         --picky-input-ring: color-mix(in oklab, var(--picky-color-neutral-400) 40%, transparent);
 
-        /* A read-only field is not a button: no shadow, but keep the ring. */
+        /* A read-only field is not a button: no shadow and no press feedback,
+           but it stays focusable so it keeps the ring. */
         --picky-shadow-alpha: 0%;
         --picky-press-alpha: 0%;
+        --picky-press-transform: none;
 
         @media (prefers-color-scheme: dark) {
             :root:not(.light) & {

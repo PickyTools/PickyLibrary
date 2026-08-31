@@ -127,7 +127,7 @@
 import { ref, watchEffect } from 'vue';
 import {
     BaseAlert, BaseButton, BaseCheckbox, BaseIcon, BaseInput, BaseModal, BasePasswordInput,
-    BasePill, BaseSelect, BaseSwitch, ToastContainer, provideIcons, useToast,
+    BasePill, BaseSelect, BaseSwitch, ToastContainer, applyReadableTextColors, provideIcons, useToast,
 } from 'pickylibrary';
 import type { AlertType, Color } from 'pickylibrary';
 import { resolveIcon } from './icons';
@@ -181,14 +181,26 @@ const dark = ref(false);
 watchEffect(() => {
     const root = document.documentElement;
     root.dataset.pickyShadow = shadow.value;
+
+    // Both classes, always. `.dark` alone is not enough: without `.light`, a
+    // machine whose OS is in dark mode still matches
+    // `@media (prefers-color-scheme: dark)` and renders dark colours on a light
+    // page. Toggling only `.dark` is the obvious thing to write and it is wrong.
     root.classList.toggle('dark', dark.value);
+    root.classList.toggle('light', !dark.value);
 
     const [button, container, small] = radiusValues[radius.value]!;
     root.style.setProperty('--picky-radius-button', button);
     root.style.setProperty('--picky-radius-container', container);
     root.style.setProperty('--picky-radius-small', small);
+
+    // One accent drives fill, hover, border and the text variant, because the
+    // stylesheet mixes those from it rather than reaching for a fixed shade.
     root.style.setProperty('--picky-color-primary-500', accent.value);
     root.style.setProperty('--picky-color-focus-ring', accent.value);
+
+    // The one thing CSS cannot decide: black or white text on that accent.
+    applyReadableTextColors(root);
 });
 
 const { addToast } = useToast();

@@ -31,6 +31,20 @@ anywhere in your own CSS:
 }
 ```
 
+One accent is enough. Hover, borders and the text variant are mixed from it with
+`color-mix()`, so they follow your colour instead of falling back to ours.
+
+The one thing CSS cannot work out is whether text on a filled surface should be black or
+white. Call `applyReadableTextColors()` once after setting your accents and it decides for
+you; skip it and a development build warns, with the ratio it measured.
+
+```js
+import { applyReadableTextColors } from 'pickylibrary';
+
+document.documentElement.style.setProperty('--picky-color-primary-500', '#f97316');
+applyReadableTextColors();
+```
+
 Your overrides win regardless of stylesheet order — PickyLibrary's own tokens live in a
 cascade layer, and unlayered CSS always beats layered CSS.
 
@@ -71,6 +85,16 @@ provideToasts();
 
 In the browser this is optional — without it `useToast()` falls back to a single
 shared store, which is what you want on the client.
+
+At most three toasts stay on screen; a fourth pushes the oldest off, preferring to
+drop a polite one so an urgent message is not displaced by a routine confirmation.
+Change it, or turn the cap off with `0`:
+
+```js
+import { createToastStore, provideToasts } from 'pickylibrary';
+
+provideToasts(createToastStore({ limit: 5 }));
+```
 
 ## Components
 

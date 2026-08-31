@@ -30,9 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, useAttrs, useSlots } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useSlots } from 'vue';
 import type { Color, HasDisabled, HasSize } from '../types';
 import { readableTextColor } from '../core/contrast';
+import { warnAboutThemeContrastOnce } from '../theme';
 
 type ButtonVariant = 'full' | 'outline' | 'text';
 /**
@@ -176,6 +177,10 @@ function handleClick(event: MouseEvent) {
 
     emit('click', event);
 }
+
+// Buttons are where filled surfaces show up first, so this is the earliest useful
+// moment to tell a consumer their accent and its text colour do not read.
+onMounted(warnAboutThemeContrastOnce);
 
 onBeforeUnmount(() => {
     if (tempLabelTimeout) clearTimeout(tempLabelTimeout);

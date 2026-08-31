@@ -26,8 +26,11 @@ export { default as ToastContainer } from './components/ToastContainer.vue';
 
 export { useToast, provideToasts, ToastStoreKey } from './composables/useToast';
 export { createToastStore } from './core/toast';
-export type { Toast, ToastOptions, ToastStore } from './composables/useToast';
+export type { Toast, ToastOptions, ToastStore, ToastStoreOptions } from './composables/useToast';
 export type { AlertType } from './components/BaseAlert.vue';
+
+export { applyReadableTextColors, checkThemeContrast, THEME_COLORS } from './theme';
+export type { ThemeColor, ThemeContrastIssue } from './theme';
 
 export { provideIcons, IconResolverKey } from './icons';
 export type { IconResolver, IconSource } from './icons';

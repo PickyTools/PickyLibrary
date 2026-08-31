@@ -20,15 +20,12 @@
  *    stylesheet loads before ours.
  *  - Distinct names, so we do not merge with the layers of a consumer running
  *    Tailwind or another framework themselves. */
-@layer picky-theme, picky-components;
+@layer picky-theme, picky-base, picky-components;
 
-/* One stylesheet per component. They place themselves in @layer picky-components.
- *
- * Mind the order: an @import is required to come first, so these lines land in the
- * cascade before the shared .picky-reset and .picky-pressable at the bottom of this
- * file. A component rule that needs to beat either of those therefore needs two
- * classes in its selector (`.picky-button .picky-button__inner`), not one. That is
- * why a few rules look more specific than they need to be. */
+/* One stylesheet per component. They place themselves in @layer picky-components,
+ * which sits after picky-base in the layer order declared above. That ordering is
+ * what lets a component rule override the shared .picky-reset and .picky-pressable
+ * with a single class, regardless of the fact that an @import has to come first. */
 @import './components/close-button.css';
 
 @import './components/alert.css';
@@ -50,13 +47,13 @@
         --picky-color-primary-100: #dbeafe;
         --picky-color-primary-200: #bfdbfe;
         --picky-color-primary-300: #93c5fd;
-        --picky-color-primary-400: #60a5fa;
-        --picky-color-primary-500: #3b82f6;
-        --picky-color-primary-600: #2563eb;
-        --picky-color-primary-700: #1d4ed8;
-        --picky-color-primary-800: #1e40af;
-        --picky-color-primary-900: #1e3a8a;
-        --picky-color-primary-950: #172554;
+        --picky-color-primary-400: #3b82f6;
+        --picky-color-primary-500: #2563eb;
+        --picky-color-primary-600: #1d4ed8;
+        --picky-color-primary-700: #1e40af;
+        --picky-color-primary-800: #1e3a8a;
+        --picky-color-primary-900: #172554;
+        --picky-color-primary-950: #0d1330;
         --picky-color-primary-text: #fff;
 
         /* ── Secondary ─────────────────────────────────────────────── */
@@ -72,6 +69,29 @@
         --picky-color-secondary-900: #0f172a;
         --picky-color-secondary-950: #020617;
         --picky-color-secondary-text: #fff;
+
+        /* ── Semantic accents ───────────────────────────────────────
+           One token per colour, plus the text that goes on top of it. These are
+           the theming entry points: set `--picky-color-primary` (or the -500 it
+           points at) and every fill, hover, border and ring follows, because the
+           components derive those with color-mix() instead of reaching for a
+           fixed shade of the ramp.
+
+           If you set an accent of your own, check its `-text` partner too. A
+           development build warns when a pair falls below 4.5:1. */
+        --picky-color-primary: var(--picky-color-primary-500);
+        --picky-color-secondary: var(--picky-color-secondary-500);
+        /* primary-text and secondary-text are declared with their ramps above. */
+        --picky-color-success: var(--picky-color-green-700);
+        --picky-color-success-text: var(--picky-color-white);
+        --picky-color-danger: var(--picky-color-red-600);
+        --picky-color-danger-text: var(--picky-color-white);
+        --picky-color-warning: var(--picky-color-yellow-400);
+        --picky-color-warning-text: var(--picky-color-yellow-950);
+        --picky-color-info: var(--picky-color-teal-700);
+        --picky-color-info-text: var(--picky-color-white);
+        --picky-color-gray: var(--picky-color-neutral-500);
+        --picky-color-gray-text: var(--picky-color-white);
 
         /* ── Surfaces ───────────────────────────────────────────────
            light-surface carries light mode, dark-surface carries dark mode. */
@@ -272,7 +292,38 @@
     }
 }
 
-@layer picky-components {
+@layer picky-base {
+    /* The flow elements the library renders itself.
+     *
+     * Shipping no global reset means the browser's own margins survive -- and they
+     * are large. A <p> carries `margin: 1em 0`, a <ul> carries that plus
+     * `padding-inline-start: 40px` and bullets. Left alone they push a field's error
+     * message a line and a half too low, and inset a select's options from the panel
+     * they sit in.
+     *
+     * Listed explicitly rather than matched by tag inside a library root, because a
+     * consumer's own paragraphs in a modal body or an alert slot must keep their
+     * margins. Only the elements we render are ours to neutralise.
+     *
+     * A new component that renders a <p>, <ul> or <li> belongs in this list; the
+     * browser suite checks that nothing is missing from it.
+     */
+    :where(
+        .picky-alert__title,
+        .picky-alert__description,
+        .picky-input__message,
+        .picky-modal__title,
+        .picky-select__label,
+        .picky-select__list,
+        .picky-select__option,
+        .picky-toast__title,
+        .picky-toast__description
+    ) {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
     /* PickyLibrary deliberately ships no global reset: a library has no business
        overruling the consumer's own. But without one, the native browser styling of
        <button> and <input> bleeds through the components -- a grey fill, a second

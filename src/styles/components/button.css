@@ -26,6 +26,11 @@
     .picky-button {
         display: inline-flex;
         border-radius: var(--picky-btn-radius, var(--picky-radius-button));
+
+        /* An <a> underlines itself, and it does so in its own colour while the text
+           colour lives on the inner element -- a white rule under coloured text. A
+           link styled as a button should not be underlined at all. */
+        text-decoration: none;
     }
 
     .picky-button:focus-visible {
@@ -197,186 +202,83 @@
     }
 
     /* ── Colours ────────────────────────────────────────────────────────────
-     * Seven tokens per colour. `custom` is deliberately absent: BaseButton sets
-     * the same tokens inline for it, so that colour needs no CSS of its own.
+     * Each colour supplies two tokens and nothing more: the accent, and the text
+     * that sits on it. Everything else -- hover, border, the text variant's ink,
+     * the press ring -- is derived from the accent with color-mix().
      *
-     * The shades are not chosen by eye. Every pair below clears WCAG 1.4.3 (4.5:1
-     * for text) or 1.4.11 (3:1 for the outline border) against the surface it
-     * actually lands on. That is why the accents sit at -600/-700 rather than the
-     * -500 you might expect: a -500 is rarely readable on white.
+     * That derivation is the point. A consumer who sets `--picky-color-primary`
+     * to their own orange gets an orange hover and an orange border, because
+     * nothing here reaches back into the ramp for a fixed shade. Hard-coding
+     * `-600` for hover would have quietly kept the old blue.
      *
-     * A filled button carries its own contrast -- its text sits on the fill, not on
-     * the page -- so fill, hover and on-fill do NOT change in dark mode. Only the
-     * tokens that end up on the page background do.
+     * `--picky-btn-ink` is the accent adjusted for legibility on the page rather
+     * than on the fill: darkened in light mode, lightened in dark. A raw mid-tone
+     * accent rarely clears 4.5:1 against white on its own.
      */
 
-    .picky-button[data-color='primary'] {
-        --picky-shadow-color: var(--picky-color-primary-600);
-        --picky-btn-fill: var(--picky-color-primary-600);
-        --picky-btn-fill-hover: var(--picky-color-primary-700);
-        --picky-btn-on-fill: var(--picky-color-primary-text);
-        --picky-btn-line: var(--picky-color-primary-600);
-        --picky-btn-on-line: var(--picky-color-black);
-        --picky-btn-accent: var(--picky-color-primary-600);
-        --picky-btn-ring-soft: var(--picky-color-primary-300);
+    .picky-button {
+        /* How much of the accent washes under an outline or text button on hover.
+           A little more in dark mode, where a faint tint disappears. */
+        --picky-btn-tint-alpha: 8%;
+
+        --picky-btn-fill: var(--picky-btn-accent-base);
+        --picky-btn-fill-hover: color-mix(in oklab, var(--picky-btn-accent-base) 85%, black);
+        --picky-btn-ring-soft: var(--picky-btn-accent-base);
+        --picky-btn-ink: color-mix(in oklab, var(--picky-btn-accent-base) var(--picky-btn-ink-mix, 78%), black);
+
+        --picky-btn-line: var(--picky-btn-ink);
+        --picky-btn-on-line: var(--picky-btn-ink);
+        --picky-btn-accent: var(--picky-btn-ink);
+
+        --picky-shadow-color: var(--picky-btn-accent-base);
 
         @media (prefers-color-scheme: dark) {
             :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-primary-500);
-                --picky-btn-on-line: var(--picky-color-white);
-                --picky-btn-accent: var(--picky-color-primary-400);
+                --picky-btn-tint-alpha: 16%;
+                --picky-btn-ink: color-mix(in oklab, var(--picky-btn-accent-base) var(--picky-btn-ink-mix-dark, 70%), white);
             }
         }
         .dark & {
-            --picky-btn-line: var(--picky-color-primary-500);
-            --picky-btn-on-line: var(--picky-color-white);
-            --picky-btn-accent: var(--picky-color-primary-400);
+            --picky-btn-tint-alpha: 16%;
+            --picky-btn-ink: color-mix(in oklab, var(--picky-btn-accent-base) var(--picky-btn-ink-mix-dark, 70%), white);
         }
+    }
+
+    .picky-button[data-color='primary'] {
+        --picky-btn-accent-base: var(--picky-color-primary);
+        --picky-btn-on-fill: var(--picky-color-primary-text);
     }
 
     .picky-button[data-color='secondary'] {
-        --picky-shadow-color: var(--picky-color-secondary-500);
-        --picky-btn-fill: var(--picky-color-secondary-500);
-        --picky-btn-fill-hover: var(--picky-color-secondary-600);
+        --picky-btn-accent-base: var(--picky-color-secondary);
         --picky-btn-on-fill: var(--picky-color-secondary-text);
-        --picky-btn-line: var(--picky-color-secondary-500);
-        --picky-btn-on-line: var(--picky-color-black);
-        --picky-btn-accent: var(--picky-color-secondary-500);
-        --picky-btn-ring-soft: var(--picky-color-secondary-300);
-
-        @media (prefers-color-scheme: dark) {
-            :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-secondary-400);
-                --picky-btn-on-line: var(--picky-color-white);
-                --picky-btn-accent: var(--picky-color-secondary-400);
-            }
-        }
-        .dark & {
-            --picky-btn-line: var(--picky-color-secondary-400);
-            --picky-btn-on-line: var(--picky-color-white);
-            --picky-btn-accent: var(--picky-color-secondary-400);
-        }
     }
 
     .picky-button[data-color='success'] {
-        --picky-shadow-color: var(--picky-color-green-700);
-        --picky-btn-fill: var(--picky-color-green-700);
-        --picky-btn-fill-hover: var(--picky-color-green-800);
-        --picky-btn-on-fill: var(--picky-color-white);
-        --picky-btn-line: var(--picky-color-green-700);
-        --picky-btn-on-line: var(--picky-color-green-700);
-        --picky-btn-accent: var(--picky-color-green-700);
-        --picky-btn-ring-soft: var(--picky-color-green-300);
-
-        @media (prefers-color-scheme: dark) {
-            :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-green-500);
-                --picky-btn-on-line: var(--picky-color-green-300);
-                --picky-btn-accent: var(--picky-color-green-400);
-            }
-        }
-        .dark & {
-            --picky-btn-line: var(--picky-color-green-500);
-            --picky-btn-on-line: var(--picky-color-green-300);
-            --picky-btn-accent: var(--picky-color-green-400);
-        }
+        --picky-btn-accent-base: var(--picky-color-success);
+        --picky-btn-on-fill: var(--picky-color-success-text);
     }
 
     .picky-button[data-color='danger'] {
-        --picky-shadow-color: var(--picky-color-red-600);
-        --picky-btn-fill: var(--picky-color-red-600);
-        --picky-btn-fill-hover: var(--picky-color-red-700);
-        --picky-btn-on-fill: var(--picky-color-white);
-        --picky-btn-line: var(--picky-color-red-600);
-        --picky-btn-on-line: var(--picky-color-red-600);
-        --picky-btn-accent: var(--picky-color-red-600);
-        --picky-btn-ring-soft: var(--picky-color-red-300);
-
-        @media (prefers-color-scheme: dark) {
-            :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-red-400);
-                --picky-btn-on-line: var(--picky-color-red-400);
-                --picky-btn-accent: var(--picky-color-red-400);
-            }
-        }
-        .dark & {
-            --picky-btn-line: var(--picky-color-red-400);
-            --picky-btn-on-line: var(--picky-color-red-400);
-            --picky-btn-accent: var(--picky-color-red-400);
-        }
+        --picky-btn-accent-base: var(--picky-color-danger);
+        --picky-btn-on-fill: var(--picky-color-danger-text);
     }
 
-    /* Yellow is intrinsically light: a filled warning button needs dark text, and
-       as a line or text colour the -500 is far too pale to read on white. */
+    /* Yellow is far lighter than the other accents, so the default mix leaves it
+       short of 4.5:1 as a border or as text. It needs more black to get there. */
     .picky-button[data-color='warning'] {
-        --picky-shadow-color: var(--picky-color-yellow-500);
-        --picky-btn-fill: var(--picky-color-yellow-400);
-        --picky-btn-fill-hover: var(--picky-color-yellow-500);
-        --picky-btn-on-fill: var(--picky-color-yellow-950);
-        --picky-btn-line: var(--picky-color-yellow-700);
-        --picky-btn-on-line: var(--picky-color-yellow-700);
-        --picky-btn-accent: var(--picky-color-yellow-700);
-        --picky-btn-ring-soft: var(--picky-color-yellow-300);
-
-        @media (prefers-color-scheme: dark) {
-            :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-yellow-500);
-                --picky-btn-on-line: var(--picky-color-yellow-300);
-                --picky-btn-accent: var(--picky-color-yellow-400);
-            }
-        }
-        .dark & {
-            --picky-btn-line: var(--picky-color-yellow-500);
-            --picky-btn-on-line: var(--picky-color-yellow-300);
-            --picky-btn-accent: var(--picky-color-yellow-400);
-        }
+        --picky-btn-accent-base: var(--picky-color-warning);
+        --picky-btn-on-fill: var(--picky-color-warning-text);
+        --picky-btn-ink-mix: 60%;
     }
 
     .picky-button[data-color='info'] {
-        --picky-shadow-color: var(--picky-color-teal-700);
-        --picky-btn-fill: var(--picky-color-teal-700);
-        --picky-btn-fill-hover: var(--picky-color-teal-800);
-        --picky-btn-on-fill: var(--picky-color-white);
-        --picky-btn-line: var(--picky-color-teal-700);
-        --picky-btn-on-line: var(--picky-color-teal-700);
-        --picky-btn-accent: var(--picky-color-teal-700);
-        --picky-btn-ring-soft: var(--picky-color-teal-300);
-
-        @media (prefers-color-scheme: dark) {
-            :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-teal-500);
-                --picky-btn-on-line: var(--picky-color-teal-300);
-                --picky-btn-accent: var(--picky-color-teal-400);
-            }
-        }
-        .dark & {
-            --picky-btn-line: var(--picky-color-teal-500);
-            --picky-btn-on-line: var(--picky-color-teal-300);
-            --picky-btn-accent: var(--picky-color-teal-400);
-        }
+        --picky-btn-accent-base: var(--picky-color-info);
+        --picky-btn-on-fill: var(--picky-color-info-text);
     }
 
     .picky-button[data-color='gray'] {
-        --picky-shadow-color: var(--picky-color-neutral-500);
-        --picky-btn-fill: var(--picky-color-neutral-500);
-        --picky-btn-fill-hover: var(--picky-color-neutral-600);
-        --picky-btn-on-fill: var(--picky-color-white);
-        --picky-btn-line: var(--picky-color-neutral-500);
-        --picky-btn-on-line: var(--picky-color-neutral-900);
-        --picky-btn-accent: var(--picky-color-neutral-500);
-        --picky-btn-ring-soft: var(--picky-color-neutral-300);
-
-        @media (prefers-color-scheme: dark) {
-            :root:not(.light) & {
-                --picky-btn-line: var(--picky-color-dark-surface-500);
-                --picky-btn-on-line: var(--picky-color-neutral-200);
-                --picky-btn-accent: var(--picky-color-neutral-400);
-            }
-        }
-        .dark & {
-            --picky-btn-line: var(--picky-color-dark-surface-500);
-            --picky-btn-on-line: var(--picky-color-neutral-200);
-            --picky-btn-accent: var(--picky-color-neutral-400);
-        }
+        --picky-btn-accent-base: var(--picky-color-gray);
+        --picky-btn-on-fill: var(--picky-color-gray-text);
     }
 }

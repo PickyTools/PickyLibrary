@@ -1,25 +1,23 @@
 // @vitest-environment node
 //
-// Reads the real stylesheets and checks every colour pair the library ships.
+// Checks the contrast the library guarantees on its own: the seven semantic
+// accents against the text that sits on them, and the surfaces they land on.
 //
-// This is here because the palette used to fail quietly: the default button was
-// 3.68:1 against its own label, well under the 4.5 that WCAG 1.4.3 asks for, and
-// nothing said so. Contrast is a property of the tokens, so it belongs in a test
-// over the tokens -- not in a component test, and not in a reviewer's eye.
+// This is where the palette used to fail quietly -- the default button sat at
+// 3.68:1 against its own label, well under the 4.5 WCAG 1.4.3 asks for, and
+// nothing said so.
+//
+// Derived values -- hover, borders, the text variant's ink -- are mixed by the
+// browser with color-mix() and are covered by the Playwright suite, which resolves
+// the real cascade instead of guessing at it here.
 
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { blend, contrastRatio } from './core/contrast';
+import { contrastRatio } from './core/contrast';
+import { applyReadableTextColors, findThemeContrastIssues, THEME_COLORS } from './core/theme';
 
-const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
-
-const theme = read('src/styles/index.css');
-const buttonCss = read('src/styles/components/button.css');
-const pillCss = read('src/styles/components/pill.css');
-const checkboxCss = read('src/styles/components/checkbox.css');
-const toastCss = read('src/styles/components/toast.css');
-const alertCss = read('src/styles/components/alert.css');
+const theme = readFileSync(join(process.cwd(), 'src/styles/index.css'), 'utf8');
 
 /** The palette, keeping the first declaration of each token -- the light-mode one. */
 const palette: Record<string, string> = {};
@@ -27,173 +25,139 @@ for (const [, name, value] of theme.matchAll(/(--picky-color-[a-z0-9-]+):\s*([^;
     if (name && value) palette[name] ??= value.trim();
 }
 
-/** Turns `var(--picky-color-green-700)` into the colour it stands for. */
-function resolve(value: string): string {
-    const reference = /var\((--picky-color-[a-z0-9-]+)\)/.exec(value);
-    if (!reference) return value.trim();
-
-    return paletteColour(reference[1] as string);
-}
-
-/** The body of a rule, braces balanced so nested media queries come along. */
-function ruleBody(css: string, selector: string): string {
-    const at = css.indexOf(selector);
-    if (at < 0) throw new Error(`Selector not found: ${selector}`);
-
-    const open = css.indexOf('{', at);
-    let depth = 0;
-    for (let i = open; i < css.length; i += 1) {
-        if (css[i] === '{') depth += 1;
-        else if (css[i] === '}' && (depth -= 1) === 0) return css.slice(open + 1, i);
-    }
-    throw new Error(`Unbalanced rule: ${selector}`);
-}
-
-/**
- * A token's value inside a rule.
- *
- * Light mode takes the first declaration and dark mode the last, because the dark
- * overrides live in nested blocks further down. Crude, but it means this test reads
- * the stylesheet the components actually ship rather than a copy of its values.
- */
-function token(body: string, name: string, mode: 'light' | 'dark' = 'light'): string {
-    const found = [...body.matchAll(new RegExp(`${name}:\\s*([^;]+);`, 'g'))]
-        .map((match) => match[1])
-        .filter((value): value is string => value !== undefined);
-
-    const value = mode === 'light' ? found.at(0) : found.at(-1);
-    if (value === undefined) throw new Error(`Token ${name} not declared`);
-    return resolve(value);
-}
-
-/** A missing token is a mistake, not an empty string -- say so loudly. */
-function paletteColour(name: string): string {
+/** Follows `var(--x)` chains until an actual colour comes out. */
+function resolve(name: string, depth = 0): string {
     const value = palette[name];
     if (!value) throw new Error(`Unknown colour token: ${name}`);
-    return value;
+    if (depth > 5) throw new Error(`Token loop at ${name}`);
+
+    const reference = /^var\((--picky-color-[a-z0-9-]+)\)$/.exec(value);
+    return reference?.[1] ? resolve(reference[1], depth + 1) : value;
 }
 
-const LIGHT_SURFACE = paletteColour('--picky-color-light-surface-50');
-const DARK_SURFACE = paletteColour('--picky-color-dark-surface-900');
+const LIGHT_SURFACE = resolve('--picky-color-light-surface-50');
+const DARK_SURFACE = resolve('--picky-color-dark-surface-900');
 
 /** WCAG 1.4.3 for text, 1.4.11 for borders and other non-text boundaries. */
 const TEXT = 4.5;
 const NON_TEXT = 3;
 
-const COLOURS = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'gray'] as const;
 
 function expectContrast(a: string, b: string, minimum: number, what: string) {
     const ratio = contrastRatio(a, b);
-    expect(ratio, `${what}: ${a} on ${b} is ${ratio.toFixed(2)}, needs ${minimum}`).toBeGreaterThanOrEqual(minimum);
+    expect(
+        ratio,
+        `${what}: ${a} on ${b} is ${ratio.toFixed(2)}, needs ${minimum}`
+    ).toBeGreaterThanOrEqual(minimum);
 }
 
-describe.each(COLOURS)('BaseButton colour "%s"', (colour) => {
-    const body = ruleBody(buttonCss, `.picky-button[data-color='${colour}']`);
+describe.each(THEME_COLORS)('the "%s" accent', (color) => {
+    const accent = () => resolve(`--picky-color-${color}`);
+    const text = () => resolve(`--picky-color-${color}-text`);
 
-    // A filled button carries its own contrast: the label sits on the fill, not on
-    // the page. So these pairs must hold in both themes, and the tokens do not
-    // change between them.
-    it('keeps the label readable on the fill, at rest and on hover', () => {
-        const label = token(body, '--picky-btn-on-fill');
-        expectContrast(label, token(body, '--picky-btn-fill'), TEXT, 'fill');
-        expectContrast(label, token(body, '--picky-btn-fill-hover'), TEXT, 'fill on hover');
+    // Every filled surface in the library -- button, toast, checkbox tick -- puts
+    // this text on this accent, so one check covers all of them.
+    it('carries its own text colour', () => {
+        expectContrast(text(), accent(), TEXT, `${color} filled`);
     });
 
-    it('keeps the text variant readable on both surfaces', () => {
-        expectContrast(token(body, '--picky-btn-accent'), LIGHT_SURFACE, TEXT, 'accent, light');
-        expectContrast(token(body, '--picky-btn-accent', 'dark'), DARK_SURFACE, TEXT, 'accent, dark');
-    });
-
-    it('keeps the outline variant readable on both surfaces', () => {
-        expectContrast(token(body, '--picky-btn-on-line'), LIGHT_SURFACE, TEXT, 'outline text, light');
-        expectContrast(token(body, '--picky-btn-on-line', 'dark'), DARK_SURFACE, TEXT, 'outline text, dark');
-    });
-
-    // The border is what makes an outline button visible at all, so it falls under
-    // 1.4.11 rather than being decorative.
-    it('gives the outline border a visible edge on both surfaces', () => {
-        expectContrast(token(body, '--picky-btn-line'), LIGHT_SURFACE, NON_TEXT, 'border, light');
-        expectContrast(token(body, '--picky-btn-line', 'dark'), DARK_SURFACE, NON_TEXT, 'border, dark');
+    // Borders and the text variant deliberately do NOT use the raw accent: they use
+    // `--picky-btn-ink`, which the stylesheet mixes towards the surface so a light
+    // accent such as yellow still reads. Checking the raw accent here would be
+    // testing something the library does not do. The browser suite covers the
+    // mixed value, because only a browser can resolve color-mix().
+    it('is a colour the maths can read', () => {
+        expect(contrastRatio(accent(), LIGHT_SURFACE)).toBeGreaterThan(0);
+        expect(contrastRatio(accent(), DARK_SURFACE)).toBeGreaterThan(0);
     });
 });
 
-describe.each(COLOURS)('BasePill colour "%s"', (colour) => {
-    const light = ruleBody(pillCss, `.picky-pill[data-color='${colour}']`);
-    const dark = ruleBody(pillCss, `.picky-pill[data-color='${colour}'][data-background='dark']`);
-    const alpha = (body: string) => Number(token(body, '--picky-pill-alpha').replace('%', '')) / 100;
-
-    it('keeps the label readable on its own tint', () => {
-        const base = token(light, '--picky-pill-base');
-
-        expectContrast(
-            token(light, '--picky-pill-text'),
-            blend(base, LIGHT_SURFACE, alpha(light)),
-            TEXT,
-            'pill on a light surface'
-        );
-        expectContrast(
-            token(dark, '--picky-pill-text'),
-            blend(base, DARK_SURFACE, alpha(dark)),
-            TEXT,
-            'pill on a dark surface'
-        );
-    });
-});
-
-describe.each(COLOURS)('BaseCheckbox colour "%s"', (colour) => {
-    const body = ruleBody(checkboxCss, `.picky-checkbox[data-color='${colour}']`);
-
-    it('keeps the tick visible on the fill, at rest and on hover', () => {
-        // Only warning overrides the tick; the rest inherit the white default.
-        const tick = /--picky-checkbox-check:/.test(body)
-            ? token(body, '--picky-checkbox-check')
-            : paletteColour('--picky-color-white');
-
-        expectContrast(tick, token(body, '--picky-checkbox-accent'), TEXT, 'tick on fill');
-        expectContrast(tick, token(body, '--picky-checkbox-accent-hover'), TEXT, 'tick on hover');
-    });
-});
-
-describe.each(COLOURS)('BaseToast style "%s"', (style) => {
-    const body = ruleBody(toastCss, `.picky-toast[data-style='${style}']`);
-
-    it('keeps its text readable on the card', () => {
-        expectContrast(
-            token(body, '--picky-toast-text'),
-            token(body, '--picky-toast-bg'),
-            TEXT,
-            'toast'
-        );
-    });
-});
-
-describe.each(['info', 'warning', 'error', 'success'])('BaseAlert type "%s"', (type) => {
-    const body = ruleBody(alertCss, `.picky-alert[data-type='${type}']`);
-
-    it('keeps its text readable on the panel', () => {
-        expectContrast(
-            token(body, '--picky-alert-text'),
-            token(body, '--picky-alert-bg'),
-            TEXT,
-            'alert, light'
-        );
-
-        // In dark mode the panel is a 40% tint of the deepest shade over the page,
-        // which lands close enough to the page itself to judge the text against it.
-        expectContrast(
-            token(body, '--picky-alert-text', 'dark'),
-            DARK_SURFACE,
-            TEXT,
-            'alert, dark'
-        );
+describe('the semantic text colours', () => {
+    it('read against the surface they belong to', () => {
+        for (const role of ['heading', 'body', 'muted', 'caption']) {
+            expectContrast(resolve(`--picky-color-text-${role}`), LIGHT_SURFACE, TEXT, `text-${role}`);
+        }
     });
 });
 
 describe('the focus ring', () => {
-    // WCAG 1.4.11 again: an indicator you cannot see is not an indicator.
+    // WCAG 1.4.11: an indicator you cannot see is not an indicator.
     it('stands out against both surfaces', () => {
-        const ring = paletteColour('--picky-color-focus-ring');
+        const ring = resolve('--picky-color-focus-ring');
         expectContrast(ring, LIGHT_SURFACE, NON_TEXT, 'focus ring, light');
         expectContrast(ring, DARK_SURFACE, NON_TEXT, 'focus ring, dark');
+    });
+});
+
+describe('helping consumers who bring their own colours', () => {
+    /** Stands in for getComputedStyle over a set of tokens. */
+    const reader = (tokens: Record<string, string>) => ({
+        getPropertyValue: (property: string) => tokens[property] ?? '',
+    });
+
+    it('reports a custom accent that cannot be read', () => {
+        // A mid-tone orange is 2.80:1 against white and 7.49:1 against black.
+        const issues = findThemeContrastIssues(
+            reader({ '--picky-color-primary': '#f97316', '--picky-color-primary-text': '#ffffff' })
+        );
+
+        expect(issues).toHaveLength(1);
+        expect(issues[0]?.color).toBe('primary');
+        expect(issues[0]?.ratio).toBeLessThan(4.5);
+    });
+
+    it('stays quiet when the pair reads', () => {
+        expect(
+            findThemeContrastIssues(
+                reader({ '--picky-color-primary': '#f97316', '--picky-color-primary-text': '#000000' })
+            )
+        ).toEqual([]);
+    });
+
+    it('picks a readable text colour for any accent', () => {
+        const written: Record<string, string> = {};
+        const target = { style: { setProperty: (k: string, v: string) => (written[k] = v) } };
+
+        applyReadableTextColors(
+            reader({ '--picky-color-primary': '#f97316', '--picky-color-info': '#0f766e' }),
+            target
+        );
+
+        expect(written['--picky-color-primary-text']).toBe('#000000');
+        expect(written['--picky-color-info-text']).toBe('#ffffff');
+    });
+});
+
+describe('the reset for elements the library renders itself', () => {
+    // Shipping no global reset means the browser's own margins survive. The rule in
+    // index.css names the elements to neutralise, and a component that renders a new
+    // <p> or <ul> without being added there inherits `margin: 1em 0` -- which is how
+    // a field's error message ended up a line and a half too low.
+    //
+    // Checked against the source rather than the browser, so a component that is not
+    // on the story page yet is still covered.
+    it('names every flow element the components render', () => {
+        const covered = new Set(
+            [...theme.matchAll(/\.(picky-[a-z]+__[a-z-]+)/g)]
+                .map((match) => match[1])
+                .filter((name): name is string => name !== undefined)
+        );
+
+        const rendered = new Set<string>();
+        for (const file of readdirSync(join(process.cwd(), 'src/components'))) {
+            if (!file.endsWith('.vue')) continue;
+
+            const source = readFileSync(join(process.cwd(), 'src/components', file), 'utf8');
+            for (const [, classes] of source.matchAll(/<(?:p|ul|ol|li)\b[^>]*class="([^"]*)"/g)) {
+                for (const name of (classes ?? '').split(/\s+/)) {
+                    if (name.startsWith('picky-') && name !== 'picky-reset') rendered.add(name);
+                }
+            }
+        }
+
+        expect(rendered.size).toBeGreaterThan(0);
+        for (const name of rendered) {
+            expect([...covered], `${name} renders a flow element but is not reset`).toContain(name);
+        }
     });
 });

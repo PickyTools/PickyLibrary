@@ -56,6 +56,16 @@
 
     /* ── The panel ─────────────────────────────────────────────────────────── */
 
+    /* The UA stylesheet centres a popover with `inset: 0; margin: auto`, which fights
+       the coordinates Floating UI sets, and gives it a border and padding of its own.
+       The background is left alone: author styles already beat the UA's. */
+    .picky-select__dropdown[popover] {
+        inset: auto;
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
     .picky-select__dropdown {
         --picky-select-hairline: rgb(0 0 0 / 0.05);
         z-index: 50;

@@ -52,76 +52,49 @@
     }
 
     /* ── Colours ────────────────────────────────────────────────────────────
-     * `data-background` says what kind of surface the pill sits on -- not whether
-     * the app is in dark mode. On a dark surface the fill gets stronger and the
-     * text a few shades lighter, so the contrast keeps working either way.
+     * Same single-accent rule as the button: the tint is the accent at low
+     * opacity, and the text is the accent pushed towards the surface it sits on.
+     * A consumer's own colour therefore works without touching anything here.
      *
-     * Text sits on a tint of its own colour, which lifts the background slightly.
-     * Each pairing below clears 4.5:1 against that mixed background, which is why
-     * the text shades run darker than the fill they sit on.
+     * `data-background` says what kind of surface the pill sits on -- not whether
+     * the app is in dark mode.
      */
 
-    .picky-pill[data-color='primary'] {
-        --picky-pill-base: var(--picky-color-primary-500);
-        --picky-pill-text: var(--picky-color-primary-700);
+    .picky-pill {
         --picky-pill-alpha: 15%;
+        --picky-pill-text: color-mix(in oklab, var(--picky-pill-base) var(--picky-pill-ink-mix, 70%), black);
     }
-    .picky-pill[data-color='primary'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-primary-300);
+
+    .picky-pill[data-background='dark'] {
         --picky-pill-alpha: 30%;
+        --picky-pill-text: color-mix(in oklab, var(--picky-pill-base) 65%, white);
+    }
+
+    /* Yellow starts far lighter than the rest, so it needs more black to read. */
+    .picky-pill[data-color='warning'] {
+        --picky-pill-alpha: 20%;
+        --picky-pill-ink-mix: 55%;
+    }
+
+    .picky-pill[data-color='primary'] {
+        --picky-pill-base: var(--picky-color-primary);
     }
     .picky-pill[data-color='secondary'] {
-        --picky-pill-base: var(--picky-color-secondary-500);
-        --picky-pill-text: var(--picky-color-secondary-700);
-        --picky-pill-alpha: 15%;
-    }
-    .picky-pill[data-color='secondary'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-secondary-300);
-        --picky-pill-alpha: 30%;
+        --picky-pill-base: var(--picky-color-secondary);
     }
     .picky-pill[data-color='success'] {
-        --picky-pill-base: var(--picky-color-green-500);
-        --picky-pill-text: var(--picky-color-green-800);
-        --picky-pill-alpha: 15%;
-    }
-    .picky-pill[data-color='success'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-green-300);
-        --picky-pill-alpha: 30%;
+        --picky-pill-base: var(--picky-color-success);
     }
     .picky-pill[data-color='danger'] {
-        --picky-pill-base: var(--picky-color-red-500);
-        --picky-pill-text: var(--picky-color-red-700);
-        --picky-pill-alpha: 15%;
-    }
-    .picky-pill[data-color='danger'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-red-300);
-        --picky-pill-alpha: 30%;
+        --picky-pill-base: var(--picky-color-danger);
     }
     .picky-pill[data-color='warning'] {
-        --picky-pill-base: var(--picky-color-yellow-500);
-        --picky-pill-text: var(--picky-color-yellow-800);
-        --picky-pill-alpha: 20%;
-    }
-    .picky-pill[data-color='warning'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-yellow-300);
-        --picky-pill-alpha: 30%;
+        --picky-pill-base: var(--picky-color-warning);
     }
     .picky-pill[data-color='info'] {
-        --picky-pill-base: var(--picky-color-teal-500);
-        --picky-pill-text: var(--picky-color-teal-700);
-        --picky-pill-alpha: 15%;
-    }
-    .picky-pill[data-color='info'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-teal-300);
-        --picky-pill-alpha: 30%;
+        --picky-pill-base: var(--picky-color-info);
     }
     .picky-pill[data-color='gray'] {
-        --picky-pill-base: var(--picky-color-neutral-500);
-        --picky-pill-text: var(--picky-color-neutral-700);
-        --picky-pill-alpha: 15%;
-    }
-    .picky-pill[data-color='gray'][data-background='dark'] {
-        --picky-pill-text: var(--picky-color-neutral-300);
-        --picky-pill-alpha: 30%;
+        --picky-pill-base: var(--picky-color-gray);
     }
 }

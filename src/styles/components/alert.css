@@ -45,7 +45,9 @@
         margin-top: 0.75rem;
     }
 
+    /* Top-aligned, because the text beside it can run to several lines. */
     .picky-alert__close {
+        align-self: flex-start;
         height: 1.5rem;
         width: 1.5rem;
         opacity: 0.6;

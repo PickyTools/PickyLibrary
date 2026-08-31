@@ -118,8 +118,12 @@ describe('BaseInput focus indication', () => {
 
     // The ring itself lives in input.css and is checked there: happy-dom applies no
     // stylesheets, so a DOM assertion would prove nothing here.
+    //
+    // :has(:focus-visible) rather than :focus-within, so the browser decides when an
+    // indicator is warranted -- a click gives a field a caret, which is enough, while
+    // tabbing to one still shows the ring.
     it('gives every state a visible focus ring in the stylesheet', () => {
-        expect(inputCss).toContain('.picky-input__control:focus-within');
+        expect(inputCss).toContain('.picky-input__control:has(:focus-visible)');
 
         const rings = inputCss.match(/--picky-input-ring:[^;]+/g) ?? [];
         expect(rings).toHaveLength(3);

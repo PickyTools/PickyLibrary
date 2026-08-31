@@ -136,11 +136,13 @@ a media query and a class cannot live in one selector:
 
 `.light` on an ancestor forces light mode even when the OS asks for dark.
 
-### A note on specificity
+### Layers
 
-The component stylesheets are pulled in with `@import`, which CSS requires at the
-top of the file. They therefore land *before* the shared `.picky-reset` and
-`.picky-pressable` rules further down `index.css`. A component rule that needs to
-beat either of those needs two classes in its selector
-(`.picky-button .picky-button__inner`), not one. That is why a few rules look more
-specific than they need to be.
+Three, in this order: `picky-theme` holds the tokens, `picky-base` the shared
+`.picky-reset` and `.picky-pressable`, and `picky-components` everything else. A
+component rule therefore beats the shared ones with a single class, and your own
+unlayered CSS beats all of them.
+
+`picky-base` also neutralises the browser's default margins on the `<p>`, `<ul>`
+and `<li>` elements the library renders itself. A new component that renders one
+belongs in that list; a test fails if it is missing.
