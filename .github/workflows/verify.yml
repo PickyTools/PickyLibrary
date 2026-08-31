@@ -1,0 +1,61 @@
+name: verify
+
+# Everything that decides whether the library works, on every push and pull
+# request. The library had 231 tests and nothing running them: a suite only pays
+# for itself once it runs without being asked.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # A newer push makes an in-flight run pointless.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # The example is a real consumer of the package, and it is what catches a
+      # break in the public API. It is linked with `file:..`, so it needs its own
+      # install.
+      - name: Install the example app
+        run: npm --prefix example ci
+
+      - name: Cache browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # --with-deps also pulls the system libraries the browser needs; without them
+      # Chromium fails to start on a bare runner with a missing-library error that
+      # says nothing about Playwright.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify
+        run: npm run verify:all
+
+      # Screenshot comparisons are skipped on CI, but a failing interaction test
+      # still leaves a trace worth reading.
+      - name: Upload the report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -42,6 +42,18 @@ for (const state of STATES) {
         });
 
         test('matches its reference rendering', async ({ page }) => {
+            /*
+             * Local only. The baselines were taken on a developer machine, and text
+             * rendering differs enough between that and a CI runner -- different font
+             * packages, different hinting -- that a comparison there reports noise
+             * rather than a change anyone made.
+             *
+             * Nothing is lost by skipping it: the assertions that catch real defects
+             * measure computed values and run everywhere. Screenshots are here to
+             * answer "did I move something", which is a question you ask locally.
+             */
+            test.skip(Boolean(process.env.CI), 'baselines are machine-specific');
+
             await page.goto(`/?theme=${state.theme}`);
             await page.waitForSelector('html[data-stories-ready]');
 

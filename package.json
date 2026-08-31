@@ -34,10 +34,11 @@
     "prepublishOnly": "npm run verify",
     "lint": "eslint .",
     "coverage": "vitest run --coverage",
-    "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm --prefix example run typecheck && npm run test:browser",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run build && npm --prefix example run typecheck",
     "docs:api": "node scripts/generate-api-docs.mjs",
     "test:browser": "playwright test",
-    "test:browser:update": "playwright test --update-snapshots"
+    "test:browser:update": "playwright test --update-snapshots",
+    "verify:all": "npm run verify && npm run test:browser"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

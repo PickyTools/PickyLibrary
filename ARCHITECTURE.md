@@ -61,6 +61,21 @@ map, a state machine, shared state. Two components out of twelve qualify.
 The payoff is visible in the tests: `core/select.test.ts` covers the full keyboard
 table and every ARIA attribute in 7ms, with no DOM and no component mounted.
 
+## What the tests are for
+
+Three layers, because each catches what the others cannot.
+
+| | Catches |
+|---|---|
+| `src/core/*.test.ts` | behaviour and ARIA, with no DOM and no framework |
+| `src/*.test.ts` | components through a virtual DOM, plus SSR in plain Node |
+| `tests/browser/` | what actually lands on screen, in four theme states |
+
+The third exists because a set of regressions once passed every other test: the
+tokens were right, the wrong ones were being applied, and only an engine that
+resolves the cascade can tell those apart. If a bug is about a colour, a size or a
+position, it belongs there.
+
 ## Rules that exist for a second framework
 
 These cost nothing today and are expensive to retrofit:

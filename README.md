@@ -124,6 +124,15 @@ cd example && npm install && npm run dev
 
 ## Contributing
 
+`npm run verify:all` is the full gate: lint, types, unit tests, a build, the
+example app's own typecheck, and the browser suite. GitHub Actions runs it on every
+push and pull request. `npm run verify` is the same without the browser, which is
+what `prepublishOnly` uses.
+
+Screenshot comparisons run locally only — the baselines are machine-specific, so on
+a CI runner they report font rendering rather than anything anyone changed. Use
+`npm run test:browser:update` after an intentional visual change.
+
 The behaviour, the styling and the Vue layer are deliberately separate; see
 [ARCHITECTURE.md](ARCHITECTURE.md) before adding a component.
 
