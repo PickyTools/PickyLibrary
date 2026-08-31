@@ -10,7 +10,7 @@ import {
 } from 'vue';
 import { createToastStore, type Toast, type ToastStore } from '../core/toast';
 
-export type { Toast, ToastOptions, ToastStore } from '../core/toast';
+export type { Toast, ToastOptions, ToastStore, ToastStoreOptions } from '../core/toast';
 
 export const ToastStoreKey: InjectionKey<ToastStore> = Symbol('picky-toast-store');
 

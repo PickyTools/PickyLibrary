@@ -32,6 +32,19 @@ export interface Toast extends Required<Pick<ToastOptions, 'title' | 'style' | '
     assertive: boolean;
 }
 
+export interface ToastStoreOptions {
+    /**
+     * How many toasts stay on screen. Adding another drops the oldest.
+     *
+     * A stack that grows without limit eventually pushes its own contents off the
+     * screen, and a screen reader announces every one of them in turn. Three is
+     * enough to see that several things happened without becoming a wall.
+     *
+     * Set to `0` to keep every toast.
+     */
+    limit?: number;
+}
+
 export interface ToastStore {
     getToasts(): readonly Toast[];
     add(options: ToastOptions): number;
@@ -48,7 +61,7 @@ export interface ToastStore {
  * shared between requests, so a singleton would carry one visitor's toast over to
  * the next.
  */
-export function createToastStore(): ToastStore {
+export function createToastStore({ limit = 3 }: ToastStoreOptions = {}): ToastStore {
     let toasts: Toast[] = [];
     let nextId = 0;
 
@@ -68,6 +81,28 @@ export function createToastStore(): ToastStore {
         notify();
     }
 
+    /**
+     * Drops the oldest toasts until the stack fits.
+     *
+     * Prefers to drop a polite one: an assertive toast interrupted the user to say
+     * something went wrong, so it should not be pushed out by a routine "Saved".
+     * Only when nothing but assertive toasts remain does the oldest of those go.
+     */
+    function evict(): void {
+        while (limit > 0 && toasts.length > limit) {
+            const victim = toasts.find((toast) => !toast.assertive) ?? toasts[0];
+            if (!victim) return;
+
+            const timer = timers.get(victim.id);
+            if (timer) {
+                clearTimeout(timer);
+                timers.delete(victim.id);
+            }
+
+            toasts = toasts.filter((toast) => toast !== victim);
+        }
+    }
+
     function add(options: ToastOptions): number {
         const id = ++nextId;
         const style = options.style ?? 'info';
@@ -83,6 +118,7 @@ export function createToastStore(): ToastStore {
         };
 
         toasts = [...toasts, toast];
+        evict();
 
         if (toast.duration > 0) {
             timers.set(
