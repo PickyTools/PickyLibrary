@@ -25,6 +25,39 @@ them anywhere in your own CSS:
 Your overrides win regardless of stylesheet order: PickyLibrary's own rules live
 in a cascade layer, and unlayered CSS always beats layered CSS.
 
+**One accent is enough.** Hover, borders and the text variant are not separate
+tokens you have to keep in step -- they are mixed from the accent with
+`color-mix()`, and adapt per theme: pushed towards black on a light page, towards
+white on a dark one. Set `--picky-color-primary-500` to your own orange and the
+outline variant becomes a readable dark orange rather than staying blue.
+
+Each colour has an accent and a text colour that goes on it:
+
+| Accent | Text on it |
+|---|---|
+| `--picky-color-primary` (follows `-500`) | `--picky-color-primary-text` |
+| `--picky-color-secondary` (follows `-500`) | `--picky-color-secondary-text` |
+| `--picky-color-success` | `--picky-color-success-text` |
+| `--picky-color-danger` | `--picky-color-danger-text` |
+| `--picky-color-warning` | `--picky-color-warning-text` |
+| `--picky-color-info` | `--picky-color-info-text` |
+| `--picky-color-gray` | `--picky-color-gray-text` |
+
+The text colour is the one thing that cannot be derived. CSS has no way, at the
+browser versions this library supports, to ask whether black or white reads better
+on a colour it was handed. So either set it yourself, or let the library work it
+out:
+
+```js
+import { applyReadableTextColors } from 'pickylibrary';
+
+document.documentElement.style.setProperty('--picky-color-primary-500', '#f97316');
+applyReadableTextColors();
+```
+
+Skip both and a development build warns, naming the pair and the ratio it
+measured. White on that orange is 2.80:1; black is 7.49:1.
+
 ### 2. Class names — for everything else
 
 When no token covers what you need, target the component directly. No

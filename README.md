@@ -150,6 +150,20 @@ Chrome 111+, Firefox 121+, Safari 16.2+ — the floor set by cascade layers,
 compiled away. Those versions are enforced by the build rather than only
 documented here.
 
+## Releasing
+
+An npm version can never be replaced, only superseded, so the version number is
+part of the release rather than an afterthought.
+
+1. Note what changed in [CHANGELOG.md](CHANGELOG.md), breaking changes first.
+2. Set the version: `npm version minor` for a breaking change, `patch` otherwise.
+   In `0.x` the minor is what carries breaking changes.
+3. `npm publish` — `prepublishOnly` runs `verify` first.
+4. `git push --follow-tags`.
+
+`npm version` writes the tag as well, so do not bump the version by hand unless
+you intend to tag it yourself.
+
 ## License
 
 MIT

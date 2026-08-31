@@ -12,7 +12,8 @@
     "dist",
     "API.md",
     "STYLING.md",
-    "ARCHITECTURE.md"
+    "ARCHITECTURE.md",
+    "CHANGELOG.md"
   ],
   "main": "./dist/pickylibrary.js",
   "module": "./dist/pickylibrary.js",
