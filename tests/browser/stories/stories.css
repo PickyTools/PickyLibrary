@@ -1,0 +1,33 @@
+/* Page chrome for the story page only. Deliberately minimal: the point is to see
+   the library's own colours, so the page supplies just a surface to sit on. */
+body {
+    margin: 0;
+    padding: 1.5rem;
+    font-family: system-ui, sans-serif;
+    background: var(--picky-color-light-surface-50);
+    color: var(--picky-color-text-body);
+}
+
+:root.dark body {
+    background: var(--picky-color-dark-surface-900);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not(.light) body {
+        background: var(--picky-color-dark-surface-900);
+    }
+}
+
+.story {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.story__name {
+    flex: 0 0 100%;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}

@@ -6,3 +6,5 @@ coverage
 .DS_Store
 .eslintcache
 *.tgz
+test-results
+playwright-report
