@@ -1,17 +1,29 @@
 /**
- * Gedeelde scroll-lock voor overlays.
+ * Shared scroll lock for overlays.
  *
- * Staat bewust in een eigen module en niet in het component. In een SFC is
- * `<script setup>` de setup-functie zelf, dus een `let` daarbinnen is per instance —
- * en dan geeft het sluiten van de ene modal het scrollen vrij terwijl een andere
- * nog open staat. Dezelfde valkuil zorgde in de oorspronkelijke BaseModal ervoor
- * dat elke instance id="modal-title-1" kreeg.
+ * Deliberately its own module rather than part of the component. In an SFC,
+ * `<script setup>` is the setup function itself, so a `let` inside it is per
+ * instance -- and then closing one modal releases scrolling while another is still
+ * open. The same trap gave every instance of the original BaseModal the same
+ * id="modal-title-1".
  */
 let lockCount = 0;
 
+/**
+ * Blocking scroll is by definition a browser concern. During server-side rendering
+ * there is no `document`, so these functions do nothing instead of throwing. The
+ * counter stays at zero and the first real lock happens after hydration -- exactly
+ * when there is something to scroll in the first place.
+ */
+function hasDocument(): boolean {
+    return typeof document !== 'undefined';
+}
+
 export function lockBodyScroll(): void {
+    if (!hasDocument()) return;
+
     if (lockCount === 0) {
-        // Meet de scrollbarbreedte vóór het verbergen, anders verspringt de lay-out.
+        // Measure the scrollbar before hiding it, or the layout jumps.
         const width = window.innerWidth - document.documentElement.clientWidth;
         document.body.style.paddingRight = `${width}px`;
         document.body.style.overflow = 'hidden';
@@ -20,6 +32,8 @@ export function lockBodyScroll(): void {
 }
 
 export function unlockBodyScroll(): void {
+    if (!hasDocument()) return;
+
     lockCount = Math.max(0, lockCount - 1);
     if (lockCount === 0) {
         document.body.style.overflow = '';
@@ -27,9 +41,10 @@ export function unlockBodyScroll(): void {
     }
 }
 
-/** Alleen voor tests. */
+/** For tests only. */
 export function resetBodyScrollLock(): void {
     lockCount = 0;
+    if (!hasDocument()) return;
     document.body.style.overflow = '';
     document.body.style.paddingRight = '';
 }
