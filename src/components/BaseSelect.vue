@@ -34,10 +34,11 @@
             </template>
         </BaseButton>
 
-        <Teleport :to="to" :disabled="teleportDisabled">
+        <Teleport :to="teleportTarget" :disabled="teleportDisabled">
             <div
                 v-if="isOpen"
                 ref="dropdownRef"
+                :popover="usePopover ? 'manual' : undefined"
                 v-bind="api.listbox"
                 :class="['picky-select__dropdown', dropdownClass]"
                 :style="[floatingStyles, isPositioned ? undefined : { visibility: 'hidden' }]"
@@ -151,31 +152,90 @@ const ids = createSelectIds(useId());
 
 const isOpen = ref(false);
 const activeIndex = ref(-1);
+
+/*
+ * Getting a panel out of a modal takes two different tricks, because a native
+ * <dialog> both paints in the top layer -- above every z-index on the page -- and
+ * clips its descendants to its own box.
+ *
+ * Both are handled by teleporting the panel into the dialog and then showing it as
+ * a popover. Each half matters:
+ *
+ *   in the dialog   `showModal()` makes everything outside the dialog inert, so a
+ *                   panel parked on <body> is painted but cannot be clicked.
+ *   as a popover    `showPopover()` promotes it into the top layer, which is what
+ *                   frees it from the dialog's `overflow: hidden`.
+ *
+ * Where popover is unavailable the panel stays a plain child of the dialog: it can
+ * be clicked but is clipped to the modal. Worse, and only in browsers below the ones
+ * the stylesheet already requires.
+ *
+ * Outside a dialog neither is needed: a panel teleported to <body> behaves.
+ */
+const dialogHost = ref<HTMLElement | null>(null);
+
+const supportsPopover =
+    typeof HTMLElement !== 'undefined' && typeof HTMLElement.prototype.showPopover === 'function';
+
+const usePopover = computed(() => Boolean(dialogHost.value) && supportsPopover);
+
+const teleportTarget = computed<string | HTMLElement>(() =>
+    props.to === 'body' ? (dialogHost.value ?? 'body') : props.to
+);
 const triggerRef = ref<InstanceType<typeof BaseButton> | null>(null);
 const dropdownRef = ref<HTMLElement | null>(null);
 
 const triggerEl = computed(() => (triggerRef.value?.$el as HTMLElement | undefined) ?? null);
+
+/*
+ * Inside a modal, measure against the viewport rather than the enclosing boxes.
+ *
+ * The panel is positioned `fixed`, so it already paints outside the dialog -- an
+ * ancestor's `overflow: hidden` does not clip fixed descendants. What it does do is
+ * make Floating UI treat the modal as the clipping boundary, which collapses
+ * `availableHeight` to a sliver and leaves a scrollable stub barely tall enough to
+ * click. Pointing the boundary at the document gives it the room it actually has.
+ */
+const overflowBoundary = computed(() =>
+    dialogHost.value ? { boundary: document.documentElement } : {}
+);
+
+// A popover is inert until it is shown, and has to be dismissed again or it stays in
+// the top layer after the panel is gone.
+watch(isOpen, async (open) => {
+    if (!usePopover.value) return;
+    await nextTick();
+
+    const panel = dropdownRef.value;
+    if (!panel?.isConnected) return;
+
+    if (open) panel.showPopover();
+    else if (panel.matches(':popover-open')) panel.hidePopover();
+});
+
+const middleware = computed(() => [
+    offset(8),
+    flip({ padding: 8, ...overflowBoundary.value }),
+    shift({ padding: 8, ...overflowBoundary.value }),
+    sizeMiddleware({
+        padding: 8,
+        ...overflowBoundary.value,
+        apply({ rects, availableHeight, elements }) {
+            Object.assign(elements.floating.style, {
+                minWidth: `${rects.reference.width}px`,
+                maxWidth: 'calc(100vw - 1rem)',
+                maxHeight: `${Math.max(96, availableHeight)}px`,
+            });
+        },
+    }),
+]);
 
 const { floatingStyles, isPositioned } = useFloating(triggerEl, dropdownRef, {
     open: isOpen,
     placement: 'bottom-start',
     strategy: 'fixed',
     whileElementsMounted: autoUpdate,
-    middleware: [
-        offset(8),
-        flip({ padding: 8 }),
-        shift({ padding: 8 }),
-        sizeMiddleware({
-            padding: 8,
-            apply({ rects, availableHeight, elements }) {
-                Object.assign(elements.floating.style, {
-                    minWidth: `${rects.reference.width}px`,
-                    maxWidth: 'calc(100vw - 1rem)',
-                    maxHeight: `${Math.max(96, availableHeight)}px`,
-                });
-            },
-        }),
-    ],
+    middleware,
 });
 
 const api = computed(() =>
@@ -201,6 +261,8 @@ function setActiveIndex(index: number): void {
 
 function open(): void {
     if (props.disabled || isOpen.value) return;
+
+    dialogHost.value = triggerEl.value?.closest('dialog') ?? null;
     isOpen.value = true;
     setActiveIndex(activeIndexOnOpen(props.options, props.modelValue));
 }
