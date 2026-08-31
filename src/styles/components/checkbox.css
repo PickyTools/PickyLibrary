@@ -1,0 +1,209 @@
+/* BaseCheckbox -- a real <input type="checkbox">, visually hidden, with a visible
+ * box beside it.
+ *
+ * Keeping the input matters: it provides click, keyboard, disabled, required and
+ * taking part in native form submission. Because it is clipped away, the focus ring
+ * has to land on the visible box -- hence the :has() selector below.
+ */
+
+@layer picky-components {
+    .picky-checkbox {
+        display: inline-flex;
+        width: fit-content;
+        align-items: flex-start;
+        user-select: none;
+        cursor: pointer;
+    }
+
+    .picky-checkbox:has(:disabled) {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    /* Visually hidden, but still reachable by keyboard and screen reader. */
+    .picky-checkbox__input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+    .picky-checkbox__box {
+        position: relative;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--picky-checkbox-line);
+        border-radius: var(--picky-radius-small);
+        background-color: var(--picky-checkbox-fill);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .picky-checkbox .picky-checkbox__box {
+            transition:
+                background-color 150ms ease-in-out,
+                border-color 150ms ease-in-out;
+        }
+    }
+
+    /* The focus ring belongs here and not on the input: that one is 1x1px and
+       clipped, so a keyboard user would see nothing of it (WCAG 2.4.7). */
+    .picky-checkbox:has(.picky-checkbox__input:focus-visible) .picky-checkbox__box {
+        outline: var(--picky-focus-ring-width) solid var(--picky-color-focus-ring);
+        outline-offset: var(--picky-focus-ring-offset);
+    }
+
+    /* The tick's colour belongs to the fill, not to the component: white is
+       unreadable on a yellow fill. Each colour block therefore sets its own. */
+    .picky-checkbox__check {
+        color: var(--picky-checkbox-check, var(--picky-color-white));
+    }
+
+    /* ── Sizes ──────────────────────────────────────────────────────────────
+     * The box gets a top margin so it aligns optically with the first line of the
+     * label rather than with the block as a whole.
+     */
+
+    .picky-checkbox[data-size='xs'] {
+        column-gap: 0.375rem;
+        font-size: var(--picky-text-xs);
+    }
+    .picky-checkbox[data-size='xs'] .picky-checkbox__box {
+        height: 0.875rem;
+        width: 0.875rem;
+        margin-top: 1px;
+    }
+    .picky-checkbox[data-size='xs'] .picky-checkbox__check {
+        height: 0.625rem;
+        width: 0.625rem;
+    }
+
+    .picky-checkbox[data-size='sm'] {
+        column-gap: 0.5rem;
+        font-size: var(--picky-text-sm);
+    }
+    .picky-checkbox[data-size='sm'] .picky-checkbox__box {
+        height: 1rem;
+        width: 1rem;
+        margin-top: 0.125rem;
+    }
+    .picky-checkbox[data-size='sm'] .picky-checkbox__check {
+        height: 0.75rem;
+        width: 0.75rem;
+    }
+
+    .picky-checkbox[data-size='md'] {
+        column-gap: 0.5rem;
+        font-size: var(--picky-text-base);
+    }
+    .picky-checkbox[data-size='md'] .picky-checkbox__box {
+        height: 1.25rem;
+        width: 1.25rem;
+        margin-top: 0.125rem;
+    }
+    .picky-checkbox[data-size='md'] .picky-checkbox__check {
+        height: 0.875rem;
+        width: 0.875rem;
+    }
+
+    .picky-checkbox[data-size='lg'] {
+        column-gap: 0.625rem;
+        font-size: var(--picky-text-lg);
+    }
+    .picky-checkbox[data-size='lg'] .picky-checkbox__box {
+        height: 1.5rem;
+        width: 1.5rem;
+        margin-top: 0.25rem;
+    }
+    .picky-checkbox[data-size='lg'] .picky-checkbox__check {
+        height: 1rem;
+        width: 1rem;
+    }
+
+    .picky-checkbox__label {
+        color: var(--picky-color-text-body);
+    }
+
+    /* ── State and colour ───────────────────────────────────────────────────
+     * Unchecked looks the same for every colour: a neutral border with no fill.
+     * Checked takes its fill from the colour.
+     */
+
+    .picky-checkbox {
+        --picky-checkbox-fill: transparent;
+        --picky-checkbox-line: var(--picky-color-neutral-400);
+        --picky-shadow-color: var(--picky-color-neutral-500);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-checkbox-line: var(--picky-color-dark-surface-500);
+            }
+        }
+        .dark & {
+            --picky-checkbox-line: var(--picky-color-dark-surface-500);
+        }
+    }
+
+    .picky-checkbox:hover:not(:has(:disabled)) {
+        --picky-checkbox-line: var(--picky-color-neutral-500);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-checkbox-line: var(--picky-color-dark-surface-300);
+            }
+        }
+        .dark & {
+            --picky-checkbox-line: var(--picky-color-dark-surface-300);
+        }
+    }
+
+    .picky-checkbox:has(:checked) {
+        --picky-checkbox-fill: var(--picky-checkbox-accent);
+        --picky-checkbox-line: transparent;
+        --picky-shadow-color: var(--picky-checkbox-accent);
+    }
+
+    .picky-checkbox:has(:checked):hover:not(:has(:disabled)) {
+        --picky-checkbox-fill: var(--picky-checkbox-accent-hover);
+        --picky-checkbox-line: transparent;
+    }
+
+    /* Hover darkens the fill rather than lightening it: the tick stays on top of
+       it, so a lighter fill would drop the pair below 4.5:1. */
+
+    .picky-checkbox[data-color='primary'] {
+        --picky-checkbox-accent: var(--picky-color-primary-600);
+        --picky-checkbox-accent-hover: var(--picky-color-primary-700);
+    }
+    .picky-checkbox[data-color='secondary'] {
+        --picky-checkbox-accent: var(--picky-color-secondary-500);
+        --picky-checkbox-accent-hover: var(--picky-color-secondary-600);
+    }
+    .picky-checkbox[data-color='success'] {
+        --picky-checkbox-accent: var(--picky-color-green-700);
+        --picky-checkbox-accent-hover: var(--picky-color-green-800);
+    }
+    .picky-checkbox[data-color='danger'] {
+        --picky-checkbox-accent: var(--picky-color-red-600);
+        --picky-checkbox-accent-hover: var(--picky-color-red-700);
+    }
+    .picky-checkbox[data-color='warning'] {
+        --picky-checkbox-accent: var(--picky-color-yellow-400);
+        --picky-checkbox-accent-hover: var(--picky-color-yellow-500);
+        --picky-checkbox-check: var(--picky-color-yellow-950);
+    }
+    .picky-checkbox[data-color='info'] {
+        --picky-checkbox-accent: var(--picky-color-teal-700);
+        --picky-checkbox-accent-hover: var(--picky-color-teal-800);
+    }
+    .picky-checkbox[data-color='gray'] {
+        --picky-checkbox-accent: var(--picky-color-neutral-600);
+        --picky-checkbox-accent-hover: var(--picky-color-neutral-700);
+    }
+}

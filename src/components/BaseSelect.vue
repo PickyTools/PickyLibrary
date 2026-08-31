@@ -1,8 +1,6 @@
 <template>
-    <div :class="['picky:relative', block ? 'picky:block' : 'picky:inline-block picky:max-w-full']">
-        <p v-if="label" :id="labelId" class="picky:text-text-body picky:mb-1 picky:text-sm picky:font-medium">
-            {{ label }}
-        </p>
+    <div v-bind="api.root">
+        <p v-if="label" v-bind="api.label">{{ label }}</p>
 
         <BaseButton
             ref="triggerRef"
@@ -12,13 +10,7 @@
             :shadow="shadow"
             :rounded-side="roundedSide"
             :disabled="disabled"
-            :class="block ? 'picky:w-full' : undefined"
-            aria-haspopup="listbox"
-            :aria-expanded="isOpen"
-            :aria-controls="listboxId"
-            :aria-activedescendant="isOpen && activeOption ? optionId(activeIndex) : undefined"
-            :aria-label="ariaLabel || undefined"
-            :aria-labelledby="!ariaLabel && label ? labelId : undefined"
+            v-bind="api.trigger"
             @click="toggle"
             @keydown="onTriggerKeydown"
         >
@@ -26,7 +18,7 @@
                 <slot name="prefix" :option="selectedOption" />
             </template>
 
-            <span v-if="!hideSelectedText" class="picky:min-w-0 picky:flex-1 picky:truncate picky:text-left">
+            <span v-if="!hideSelectedText" class="picky-select__value">
                 <slot :option="selectedOption" :open="isOpen">{{ selectedOption?.label ?? placeholder }}</slot>
             </span>
 
@@ -36,7 +28,7 @@
                         v-if="!hideArrow"
                         :code="arrowIcon"
                         :size="size === 'xs' ? 'xs' : 'md'"
-                        :class="['picky:shrink-0 picky:motion-safe:transition-transform picky:motion-safe:duration-200', isOpen ? 'picky:rotate-180' : '']"
+                        class="picky-select__arrow"
                     />
                 </slot>
             </template>
@@ -45,38 +37,18 @@
         <Teleport :to="to" :disabled="teleportDisabled">
             <div
                 v-if="isOpen"
-                :id="listboxId"
                 ref="dropdownRef"
-                role="listbox"
-                :aria-labelledby="label ? labelId : undefined"
-                :aria-label="!label && ariaLabel ? ariaLabel : undefined"
-                :class="[
-                    'picky:z-50 picky:overflow-auto picky:rounded-md picky:bg-light-surface-50 picky:shadow-lg picky:ring-1 picky:ring-black/5 picky:dark:bg-dark-surface-800 picky:dark:ring-white/10',
-                    dropdownClass,
-                ]"
+                v-bind="api.listbox"
+                :class="['picky-select__dropdown', dropdownClass]"
                 :style="[floatingStyles, isPositioned ? undefined : { visibility: 'hidden' }]"
             >
                 <slot name="dropdown" :close="close" :active-index="activeIndex" :set-active-index="setActiveIndex">
-                    <ul class="picky:py-1">
+                    <ul class="picky-select__list">
                         <li
                             v-for="(option, index) in options"
-                            :id="optionId(index)"
                             :key="String(option.value)"
-                            role="option"
-                            :aria-selected="option.value === modelValue"
-                            :aria-disabled="option.disabled || undefined"
-                            :class="[
-                                'picky:text-text-body picky:flex picky:items-center picky:gap-x-2 picky:px-3 picky:py-2 picky:text-sm picky:font-medium picky:whitespace-nowrap',
-                                option.disabled
-                                    ? 'picky:cursor-not-allowed picky:opacity-50'
-                                    : 'picky:cursor-pointer',
-                                index === activeIndex && !option.disabled
-                                    ? 'picky:bg-primary-100 picky:dark:bg-dark-surface-700'
-                                    : option.value === modelValue
-                                      ? 'picky:bg-neutral-100 picky:dark:bg-dark-surface-700/60'
-                                      : '',
-                            ]"
-                            @click="select(option)"
+                            v-bind="api.option(index)"
+                            @click="choose(index)"
                             @mousemove="!option.disabled && (activeIndex = index)"
                         >
                             <slot name="option" :option="option" :active="index === activeIndex">
@@ -96,26 +68,24 @@ import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue';
 import { autoUpdate, flip, offset, shift, size as sizeMiddleware, useFloating } from '@floating-ui/vue';
 import BaseButton from './BaseButton.vue';
 import BaseIcon from './BaseIcon.vue';
-import type { Size } from '../types';
-
-/**
- * Een optie heeft minimaal een label en een waarde. Hang er gerust eigen velden
- * aan: BaseSelect is generiek over het optietype, dus die velden komen getypeerd
- * terug in de slots. Er staat bewust géén index-signature op — die accepteerde
- * elke property en controleerde dus niets, ook een typefout in `label` niet.
- */
-export interface SelectOption<Value = string> {
-    label: string;
-    value: Value;
-    disabled?: boolean;
-}
+import type { Color, Size } from '../types';
+import {
+    activeIndexOnOpen,
+    connectSelect,
+    createSelectIds,
+    createTypeahead,
+    selectKeydown,
+    type SelectIntent,
+    type SelectOption,
+} from '../core/select';
 
 /*
- * Volgt het listbox-patroon met aria-activedescendant: de focus blijft op de knop,
- * en die wijst met aria-activedescendant naar de actieve optie. Eerder had de
- * dropdown twee geneste role="listbox" (een listbox mag alleen opties bevatten),
- * ontbrak aria-controls, en hadden de opties geen id — waardoor pijltjesnavigatie
- * visueel werkte maar voor een schermlezer volledig stil was.
+ * This component is the Vue adapter; the behaviour lives in core/select.ts.
+ *
+ * What remains here is deliberately only what is Vue-specific: the refs, positioning
+ * through Floating UI, moving focus and scrolling. The keyboard table and every ARIA
+ * attribute come from core, so a React or Angular version does not have to work them
+ * out again -- and cannot get them wrong again.
  */
 defineOptions({ name: 'BaseSelect', inheritAttrs: true });
 
@@ -127,7 +97,7 @@ const props = withDefaults(
         placeholder?: string;
         size?: Size;
         variant?: 'full' | 'outline' | 'text';
-        color?: 'primary' | 'secondary' | 'success' | 'danger' | 'gray';
+        color?: Color;
         shadow?: 'hard' | 'soft' | 'none';
         roundedSide?: 'all' | 'left' | 'right' | 'none';
         disabled?: boolean;
@@ -136,7 +106,7 @@ const props = withDefaults(
         block?: boolean;
         ariaLabel?: string;
         arrowIcon?: string;
-        /** Extra klassen op het (geteleporteerde) paneel — bijvoorbeeld om het buiten je thema te houden. */
+        /** Extra classes on the (teleported) panel -- for example to keep it outside your theme. */
         dropdownClass?: string | string[];
         to?: string | HTMLElement;
         teleportDisabled?: boolean;
@@ -164,21 +134,20 @@ const props = withDefaults(
 const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>();
 
 defineSlots<{
-    default(props: { option: O | undefined; open: boolean }): unknown;
-    prefix(props: { option: O | undefined }): unknown;
-    suffix(props: { option: O | undefined; open: boolean }): unknown;
-    option(props: { option: O; active: boolean }): unknown;
-    dropdown(props: {
+    default?(props: { option: O | undefined; open: boolean }): unknown;
+    prefix?(props: { option: O | undefined }): unknown;
+    suffix?(props: { option: O | undefined; open: boolean }): unknown;
+    option?(props: { option: O; active: boolean }): unknown;
+    dropdown?(props: {
         close: () => void;
         activeIndex: number;
         setActiveIndex: (index: number) => void;
     }): unknown;
 }>();
 
-const uid = useId();
-const labelId = `${uid}-label`;
-const listboxId = `${uid}-listbox`;
-const optionId = (index: number) => `${uid}-option-${index}`;
+// The id comes from Vue, not from core: server and client have to produce the same
+// sequence, or hydration breaks on exactly the aria wiring.
+const ids = createSelectIds(useId());
 
 const isOpen = ref(false);
 const activeIndex = ref(-1);
@@ -209,123 +178,96 @@ const { floatingStyles, isPositioned } = useFloating(triggerEl, dropdownRef, {
     ],
 });
 
+const api = computed(() =>
+    connectSelect<T, O>(
+        { open: isOpen.value, activeIndex: activeIndex.value },
+        {
+            options: props.options,
+            value: props.modelValue,
+            ids,
+            label: props.label,
+            ariaLabel: props.ariaLabel,
+            block: props.block,
+        }
+    )
+);
+
 const selectedOption = computed(() => props.options.find((option) => option.value === props.modelValue));
-const activeOption = computed(() => props.options[activeIndex.value]);
 
 function setActiveIndex(index: number): void {
     activeIndex.value = index;
+    scrollActiveIntoView();
 }
 
 function open(): void {
     if (props.disabled || isOpen.value) return;
     isOpen.value = true;
-
-    const selected = props.options.findIndex((option) => option.value === props.modelValue);
-    activeIndex.value = selected >= 0 ? selected : nextEnabled(-1, 1);
-    scrollActiveIntoView();
+    setActiveIndex(activeIndexOnOpen(props.options, props.modelValue));
 }
 
 function close(): void {
     isOpen.value = false;
     activeIndex.value = -1;
+    typeahead.reset();
 }
 
 function toggle(): void {
     isOpen.value ? close() : open();
 }
 
-function nextEnabled(from: number, step: number): number {
-    const count = props.options.length;
-    if (count === 0) return -1;
-
-    let index = from;
-    for (let i = 0; i < count; i += 1) {
-        index = (index + step + count) % count;
-        if (!props.options[index]?.disabled) return index;
-    }
-    return -1;
-}
-
-function move(step: number): void {
-    activeIndex.value = nextEnabled(activeIndex.value, step);
-    scrollActiveIntoView();
-}
-
-function scrollActiveIntoView(): void {
-    nextTick(() => {
-        dropdownRef.value?.querySelector(`#${CSS.escape(optionId(activeIndex.value))}`)?.scrollIntoView({ block: 'nearest' });
-    });
-}
-
-function select(option: O | undefined): void {
+function choose(index: number): void {
+    const option = props.options[index];
     if (!option || option.disabled) return;
+
     emit('update:modelValue', option.value);
     close();
     triggerEl.value?.focus();
 }
 
-// Type-ahead: springen naar de eerste optie die met de ingetypte letters begint.
-let typed = '';
-let typedTimer: ReturnType<typeof setTimeout> | null = null;
+function scrollActiveIntoView(): void {
+    nextTick(() => {
+        if (activeIndex.value < 0) return;
+        dropdownRef.value
+            ?.querySelector(`#${CSS.escape(ids.option(activeIndex.value))}`)
+            ?.scrollIntoView({ block: 'nearest' });
+    });
+}
 
-function typeAhead(char: string): void {
-    typed += char.toLowerCase();
-    if (typedTimer) clearTimeout(typedTimer);
-    typedTimer = setTimeout(() => (typed = ''), 500);
-
-    const match = props.options.findIndex(
-        (option) => !option.disabled && option.label.toLowerCase().startsWith(typed)
-    );
-    if (match >= 0) {
-        activeIndex.value = match;
-        scrollActiveIntoView();
+/** Carries out what core decided. This is the only place that touches state. */
+function apply(intent: SelectIntent): void {
+    switch (intent.type) {
+        case 'open':
+            open();
+            break;
+        case 'close':
+            close();
+            break;
+        case 'activate':
+            setActiveIndex(intent.index);
+            break;
+        case 'choose':
+            choose(intent.index);
+            break;
+        case 'none':
+            break;
     }
 }
+
+const typeahead = createTypeahead();
 
 function onTriggerKeydown(event: KeyboardEvent): void {
     if (props.disabled) return;
 
-    switch (event.key) {
-        case 'ArrowDown':
-        case 'ArrowUp':
-            event.preventDefault();
-            isOpen.value ? move(event.key === 'ArrowDown' ? 1 : -1) : open();
-            break;
-        case 'Home':
-            if (isOpen.value) {
-                event.preventDefault();
-                activeIndex.value = nextEnabled(-1, 1);
-                scrollActiveIntoView();
-            }
-            break;
-        case 'End':
-            if (isOpen.value) {
-                event.preventDefault();
-                activeIndex.value = nextEnabled(props.options.length, -1);
-                scrollActiveIntoView();
-            }
-            break;
-        case 'Enter':
-        case ' ':
-            event.preventDefault();
-            // De klik-handler van de knop niet ook laten vuren, anders racen open en sluiten.
-            event.stopPropagation();
-            isOpen.value ? select(activeOption.value) : open();
-            break;
-        case 'Escape':
-            if (isOpen.value) {
-                event.preventDefault();
-                close();
-            }
-            break;
-        case 'Tab':
-            if (isOpen.value) close();
-            break;
-        default:
-            if (isOpen.value && event.key.length === 1 && !event.metaKey && !event.ctrlKey) {
-                typeAhead(event.key);
-            }
-    }
+    const result = selectKeydown(
+        event,
+        { open: isOpen.value, activeIndex: activeIndex.value },
+        props.options,
+        typeahead
+    );
+
+    if (result.preventDefault) event.preventDefault();
+    if (result.stopPropagation) event.stopPropagation();
+    apply(result.intent);
 }
 
 function onDocumentPointerDown(event: PointerEvent): void {
@@ -334,8 +276,8 @@ function onDocumentPointerDown(event: PointerEvent): void {
     close();
 }
 
-// De listener alleen aanhaken zolang de dropdown open is: eerder hing hij vanaf
-// mount permanent aan het document, per instance.
+// Only attach the listener while the dropdown is open: it used to sit on the
+// document permanently from mount, once per instance.
 watch(isOpen, (open) => {
     if (open) {
         document.addEventListener('pointerdown', onDocumentPointerDown, true);
@@ -346,7 +288,6 @@ watch(isOpen, (open) => {
 
 onBeforeUnmount(() => {
     document.removeEventListener('pointerdown', onDocumentPointerDown, true);
-    if (typedTimer) clearTimeout(typedTimer);
 });
 
 defineExpose({ open, close, focus: () => triggerEl.value?.focus() });

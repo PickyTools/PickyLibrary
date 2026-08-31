@@ -1,0 +1,138 @@
+/* BaseSelect -- a button that opens a listbox.
+ *
+ * The trigger is a BaseButton, so it brings its own styling. What lives here is the
+ * panel, the options and the layout around them. Positioning itself comes from
+ * Floating UI as an inline style: those values differ per frame and have no place
+ * in a stylesheet.
+ */
+
+@layer picky-components {
+    .picky-select {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .picky-select[data-block='true'] {
+        display: block;
+        max-width: none;
+    }
+
+    .picky-select[data-block='true'] .picky-button {
+        width: 100%;
+    }
+
+    .picky-select__label {
+        margin-bottom: 0.25rem;
+        color: var(--picky-color-text-body);
+        font-size: var(--picky-text-sm);
+        line-height: var(--picky-text-sm--line-height);
+        font-weight: 500;
+    }
+
+    /* The chosen value may shrink and truncate; the arrow never does. */
+    .picky-select__value {
+        min-width: 0;
+        flex: 1;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .picky-select__arrow {
+        flex-shrink: 0;
+    }
+
+    .picky-select[data-state='open'] .picky-select__arrow {
+        transform: rotate(180deg);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .picky-select__arrow {
+            transition: transform 200ms ease-in-out;
+        }
+    }
+
+    /* ── The panel ─────────────────────────────────────────────────────────── */
+
+    .picky-select__dropdown {
+        --picky-select-hairline: rgb(0 0 0 / 0.05);
+        z-index: 50;
+        overflow: auto;
+        border-radius: var(--picky-radius-inner-container);
+        background-color: var(--picky-color-light-surface-50);
+
+        /* Drop shadow plus a hairline around it, in a single box-shadow. An outline
+           would be the wrong tool here: it clashes with the focus ring. */
+        box-shadow:
+            0 10px 15px -3px rgb(0 0 0 / 0.1),
+            0 4px 6px -4px rgb(0 0 0 / 0.1),
+            0 0 0 1px var(--picky-select-hairline);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) .picky-select__dropdown {
+            background-color: var(--picky-color-dark-surface-800);
+            --picky-select-hairline: rgb(255 255 255 / 0.1);
+        }
+    }
+    .dark .picky-select__dropdown {
+        background-color: var(--picky-color-dark-surface-800);
+        --picky-select-hairline: rgb(255 255 255 / 0.1);
+    }
+
+    .picky-select__list {
+        padding-block: 0.25rem;
+    }
+
+    /* ── Options ────────────────────────────────────────────────────────────
+     * `data-active` is the option the arrow keys are on (aria-activedescendant),
+     * `data-selected` is the chosen value. Active wins over selected.
+     */
+
+    .picky-select__option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        color: var(--picky-color-text-body);
+        font-size: var(--picky-text-sm);
+        line-height: var(--picky-text-sm--line-height);
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .picky-select__option[aria-disabled='true'] {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .picky-select__option[data-selected='true'] {
+        background-color: var(--picky-color-neutral-100);
+    }
+
+    .picky-select__option[data-active='true'] {
+        background-color: var(--picky-color-primary-100);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) .picky-select__option[data-selected='true'] {
+            background-color: color-mix(
+                in oklab,
+                var(--picky-color-dark-surface-700) 60%,
+                transparent
+            );
+        }
+        :root:not(.light) .picky-select__option[data-active='true'] {
+            background-color: var(--picky-color-dark-surface-700);
+        }
+    }
+    .dark .picky-select__option[data-selected='true'] {
+        background-color: color-mix(in oklab, var(--picky-color-dark-surface-700) 60%, transparent);
+    }
+    .dark .picky-select__option[data-active='true'] {
+        background-color: var(--picky-color-dark-surface-700);
+    }
+}

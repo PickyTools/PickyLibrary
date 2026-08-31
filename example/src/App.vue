@@ -98,9 +98,9 @@
         <h2>Icons</h2>
         <div class="row">
             <span class="label">two sources</span>
-            <!-- Lucide is stroke-gebaseerd, Simple Icons fill-gebaseerd. Beide worden
-                 correct gerenderd omdat BaseIcon de paint van het icoon respecteert
-                 in plaats van fill="currentColor" op te dringen. -->
+            <!-- Lucide is stroke-based, Simple Icons fill-based. Both are
+                 rendered correctly because BaseIcon respects the icon's own paint
+                 instead of forcing fill="currentColor" onto it. -->
             <BaseIcon code="check" size="lg" />
             <BaseIcon code="moon" size="lg" />
             <BaseIcon code="circle-check" size="lg" />
@@ -129,10 +129,10 @@ import {
     BaseAlert, BaseButton, BaseCheckbox, BaseIcon, BaseInput, BaseModal, BasePasswordInput,
     BasePill, BaseSelect, BaseSwitch, ToastContainer, provideIcons, useToast,
 } from 'pickylibrary';
-import type { AlertType, ToastStyle } from 'pickylibrary';
+import type { AlertType, Color } from 'pickylibrary';
 import { resolveIcon } from './icons';
 
-// De enige regel configuratie die PickyLibrary vraagt.
+// The only line of configuration PickyLibrary asks for.
 provideIcons(resolveIcon);
 
 const variants = ['full', 'outline', 'text'] as const;
@@ -177,7 +177,7 @@ const radiusValues: Record<string, [string, string, string]> = {
 const accent = ref('#3b82f6');
 const dark = ref(false);
 
-// Thematiseren is puur CSS: variabelen zetten, en één attribuut voor de schaduw.
+// Theming is pure CSS: set some variables, plus one attribute for the shadow.
 watchEffect(() => {
     const root = document.documentElement;
     root.dataset.pickyShadow = shadow.value;
@@ -193,7 +193,7 @@ watchEffect(() => {
 
 const { addToast } = useToast();
 
-function notify(style: ToastStyle) {
+function notify(style: Color) {
     addToast({
         title: style === 'danger' ? 'Something went wrong' : 'Saved',
         description:

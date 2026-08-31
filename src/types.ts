@@ -1,23 +1,15 @@
-/** Groottes die alle componenten delen. */
-export type Size = 'xs' | 'sm' | 'md' | 'lg';
-
-/**
- * Semantische kleuren. Eén unie voor de hele library — in de ColorPicky-versie
- * heette dezelfde rode variant `warning` (BaseButton), `red` (BaseCheckbox) en
- * `danger` (BasePill). `danger` is de gangbare naam en wint.
+/*
+ * Re-export of src/core/types.ts.
+ *
+ * The types live in core because they are framework-free. This file stays so that
+ * the components -- and existing consumer imports -- do not all have to change
+ * when core eventually becomes a package of its own.
  */
-export type Color = 'primary' | 'secondary' | 'success' | 'danger' | 'gray';
-
-export interface HasSize {
-    size?: Size;
-}
-
-export interface HasDisabled {
-    disabled?: boolean;
-}
-
-export interface HasColor {
-    color?: Color;
-}
-
-export interface BaseComponentProps extends HasSize, HasDisabled {}
+export type {
+    Size,
+    Color,
+    HasSize,
+    HasDisabled,
+    HasColor,
+    BaseComponentProps,
+} from './core/types';

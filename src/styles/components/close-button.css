@@ -1,0 +1,32 @@
+/* The dismiss button shared by alert, toast and modal.
+ *
+ * It used to sit in three templates almost identically, each with slightly different
+ * focus and hover values. Only the common part lives here; size and colour are added
+ * by each component through its own __close class.
+ */
+
+@layer picky-components {
+    .picky-close-button {
+        display: flex;
+        flex-shrink: 0;
+        align-self: flex-start;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: var(--picky-radius-small);
+    }
+
+    .picky-close-button:focus-visible {
+        outline: var(--picky-focus-ring-width) solid var(--picky-color-focus-ring);
+        outline-offset: var(--picky-focus-ring-offset);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .picky-close-button {
+            transition:
+                opacity 150ms ease-in-out,
+                color 150ms ease-in-out,
+                background-color 150ms ease-in-out;
+        }
+    }
+}

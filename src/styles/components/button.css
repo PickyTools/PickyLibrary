@@ -1,0 +1,382 @@
+/* BaseButton -- button or link, in three variants and seven colours.
+ *
+ * The arrangement that replaces 18 hand-tuned combinations:
+ *
+ *   colour  only sets tokens   (--picky-btn-fill, --picky-btn-line, ...)
+ *   variant reads those tokens (where does the colour land: fill, border or text?)
+ *
+ * So each variant rule is written once instead of once per colour, and a new colour
+ * is seven tokens with no new rules at all.
+ *
+ * Dark mode overrides tokens only, never whole rules. It has to be written twice,
+ * because a media query and a class cannot live in one selector:
+ *   @media (prefers-color-scheme: dark) { :root:not(.light) & }   system preference
+ *   .dark &                                                       explicit choice
+ *
+ * Every class and data attribute here is public -- see STYLING.md.
+ */
+
+@layer picky-components {
+    /* ── Structure ──────────────────────────────────────────────────────────
+     * The outside is the real <button> or <a>: it carries focus and semantics. The
+     * inside carries all the styling. Both get the same corner radius so the focus
+     * outline follows the button's shape.
+     */
+
+    .picky-button {
+        display: inline-flex;
+        border-radius: var(--picky-btn-radius, var(--picky-radius-button));
+    }
+
+    .picky-button:focus-visible {
+        outline: var(--picky-focus-ring-width) solid var(--picky-color-focus-ring);
+        outline-offset: var(--picky-focus-ring-offset);
+    }
+
+    .picky-button__inner {
+        position: relative;
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        column-gap: 0.5rem;
+        cursor: pointer;
+        border-radius: var(--picky-btn-radius, var(--picky-radius-button));
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        /* Names the properties explicitly rather than using `all`, because this rule
+         * would otherwise wipe out the transform transition from .picky-pressable. */
+        .picky-button .picky-button__inner {
+            transition:
+                color 100ms ease-in-out,
+                background-color 100ms ease-in-out,
+                border-color 100ms ease-in-out,
+                box-shadow 100ms ease-in-out,
+                transform 100ms ease-in-out;
+        }
+
+        /* Off by default, so a theme switch changes the corners instantly. */
+        .picky-button[data-transition-radius='true'] .picky-button__inner {
+            transition:
+                color 100ms ease-in-out,
+                background-color 100ms ease-in-out,
+                border-color 100ms ease-in-out,
+                box-shadow 100ms ease-in-out,
+                transform 100ms ease-in-out,
+                border-radius 200ms ease-out;
+        }
+    }
+
+    /* ── Corners ────────────────────────────────────────────────────────────
+     * Squaring off one side lets buttons sit flush against each other. The
+     * transform-origin follows, so the press animation moves toward its neighbour.
+     */
+
+    .picky-button[data-rounded='left'] {
+        --picky-btn-radius: var(--picky-radius-button) 0 0 var(--picky-radius-button);
+    }
+    .picky-button[data-rounded='right'] {
+        --picky-btn-radius: 0 var(--picky-radius-button) var(--picky-radius-button) 0;
+    }
+    .picky-button[data-rounded='none'] {
+        --picky-btn-radius: 0;
+    }
+
+    .picky-button[data-rounded='left'] .picky-button__inner {
+        transform-origin: right;
+    }
+    .picky-button[data-rounded='right'] .picky-button__inner {
+        transform-origin: left;
+    }
+
+    /* ── Sizes ──────────────────────────────────────────────────────────────
+     * These heights are also touch targets: at 24px, `xs` sits exactly on the floor
+     * set by WCAG 2.2 criterion 2.5.8. Do not shrink it further.
+     */
+
+    .picky-button[data-size='xs'] .picky-button__inner {
+        height: 1.5rem;
+        min-width: 2rem;
+        padding-inline: 0.375rem;
+        font-size: var(--picky-text-xs);
+        line-height: var(--picky-text-xs--line-height);
+    }
+
+    .picky-button[data-size='sm'] .picky-button__inner {
+        height: 2rem;
+        min-width: 3rem;
+        padding-inline: 0.5rem;
+        font-size: var(--picky-text-sm);
+        line-height: var(--picky-text-sm--line-height);
+    }
+
+    .picky-button[data-size='md'] .picky-button__inner {
+        height: 2.5rem;
+        min-width: 3rem;
+        padding-inline: 1rem;
+        font-size: var(--picky-text-base);
+        line-height: var(--picky-text-base--line-height);
+    }
+
+    .picky-button[data-size='lg'] .picky-button__inner {
+        height: 3.5rem;
+        min-width: 3.5rem;
+        padding-inline: 2rem;
+        font-size: var(--picky-text-base);
+        line-height: var(--picky-text-base--line-height);
+    }
+
+    @media (width >= 40rem) {
+        .picky-button[data-size='lg'] .picky-button__inner {
+            font-size: var(--picky-text-xl);
+            line-height: var(--picky-text-xl--line-height);
+        }
+    }
+
+    /* ── Variants ───────────────────────────────────────────────────────────
+     * These rules name no colour at all; they only read tokens.
+     */
+
+    .picky-button[data-variant='full'] .picky-button__inner {
+        border: 1px solid transparent;
+        background-color: var(--picky-btn-fill);
+        color: var(--picky-btn-on-fill);
+        font-weight: 500;
+    }
+
+    .picky-button[data-variant='outline'] .picky-button__inner {
+        border: 1px solid var(--picky-btn-line);
+        color: var(--picky-btn-on-line);
+    }
+
+    .picky-button[data-variant='text'] .picky-button__inner {
+        color: var(--picky-btn-accent);
+        font-weight: 400;
+
+        /* A text button has no surface and so no shadow. Only the opacity goes to
+         * zero, which keeps the press transform from .picky-pressable working. */
+        --picky-shadow-alpha: 0%;
+        --picky-press-alpha: 0%;
+    }
+
+    /* Hover, only when the button is actually usable. A link has no :disabled,
+     * which is why aria-disabled is in there too. */
+    .picky-button:not(:disabled, [aria-disabled='true']):hover {
+        &[data-variant='full'] .picky-button__inner {
+            background-color: var(--picky-btn-fill-hover);
+        }
+
+        &[data-variant='outline'] .picky-button__inner,
+        &[data-variant='text'] .picky-button__inner {
+            background-color: color-mix(
+                in oklab,
+                var(--picky-btn-accent) var(--picky-btn-tint-alpha),
+                transparent
+            );
+        }
+    }
+
+    /* The ring shown while pressed. .picky-pressable reserves a slot for it in its
+     * box-shadow, so the ring and the shadow coexist instead of replacing each
+     * other. */
+    .picky-button[data-variant='full'] .picky-button__inner:active {
+        --picky-ring: 0 0 0 4px
+            color-mix(in oklab, var(--picky-btn-ring-soft) 25%, transparent);
+    }
+
+    .picky-button[data-variant='outline'] .picky-button__inner:active {
+        --picky-ring: 0 0 0 4px color-mix(in oklab, var(--picky-btn-line) 35%, transparent);
+    }
+
+    /* ── Disabled ──────────────────────────────────────────────────────────── */
+
+    .picky-button:is(:disabled, [aria-disabled='true']) .picky-button__inner {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ── Colours ────────────────────────────────────────────────────────────
+     * Seven tokens per colour. `custom` is deliberately absent: BaseButton sets
+     * the same tokens inline for it, so that colour needs no CSS of its own.
+     *
+     * The shades are not chosen by eye. Every pair below clears WCAG 1.4.3 (4.5:1
+     * for text) or 1.4.11 (3:1 for the outline border) against the surface it
+     * actually lands on. That is why the accents sit at -600/-700 rather than the
+     * -500 you might expect: a -500 is rarely readable on white.
+     *
+     * A filled button carries its own contrast -- its text sits on the fill, not on
+     * the page -- so fill, hover and on-fill do NOT change in dark mode. Only the
+     * tokens that end up on the page background do.
+     */
+
+    .picky-button[data-color='primary'] {
+        --picky-shadow-color: var(--picky-color-primary-600);
+        --picky-btn-fill: var(--picky-color-primary-600);
+        --picky-btn-fill-hover: var(--picky-color-primary-700);
+        --picky-btn-on-fill: var(--picky-color-primary-text);
+        --picky-btn-line: var(--picky-color-primary-600);
+        --picky-btn-on-line: var(--picky-color-black);
+        --picky-btn-accent: var(--picky-color-primary-600);
+        --picky-btn-ring-soft: var(--picky-color-primary-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-primary-500);
+                --picky-btn-on-line: var(--picky-color-white);
+                --picky-btn-accent: var(--picky-color-primary-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-primary-500);
+            --picky-btn-on-line: var(--picky-color-white);
+            --picky-btn-accent: var(--picky-color-primary-400);
+        }
+    }
+
+    .picky-button[data-color='secondary'] {
+        --picky-shadow-color: var(--picky-color-secondary-500);
+        --picky-btn-fill: var(--picky-color-secondary-500);
+        --picky-btn-fill-hover: var(--picky-color-secondary-600);
+        --picky-btn-on-fill: var(--picky-color-secondary-text);
+        --picky-btn-line: var(--picky-color-secondary-500);
+        --picky-btn-on-line: var(--picky-color-black);
+        --picky-btn-accent: var(--picky-color-secondary-500);
+        --picky-btn-ring-soft: var(--picky-color-secondary-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-secondary-400);
+                --picky-btn-on-line: var(--picky-color-white);
+                --picky-btn-accent: var(--picky-color-secondary-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-secondary-400);
+            --picky-btn-on-line: var(--picky-color-white);
+            --picky-btn-accent: var(--picky-color-secondary-400);
+        }
+    }
+
+    .picky-button[data-color='success'] {
+        --picky-shadow-color: var(--picky-color-green-700);
+        --picky-btn-fill: var(--picky-color-green-700);
+        --picky-btn-fill-hover: var(--picky-color-green-800);
+        --picky-btn-on-fill: var(--picky-color-white);
+        --picky-btn-line: var(--picky-color-green-700);
+        --picky-btn-on-line: var(--picky-color-green-700);
+        --picky-btn-accent: var(--picky-color-green-700);
+        --picky-btn-ring-soft: var(--picky-color-green-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-green-500);
+                --picky-btn-on-line: var(--picky-color-green-300);
+                --picky-btn-accent: var(--picky-color-green-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-green-500);
+            --picky-btn-on-line: var(--picky-color-green-300);
+            --picky-btn-accent: var(--picky-color-green-400);
+        }
+    }
+
+    .picky-button[data-color='danger'] {
+        --picky-shadow-color: var(--picky-color-red-600);
+        --picky-btn-fill: var(--picky-color-red-600);
+        --picky-btn-fill-hover: var(--picky-color-red-700);
+        --picky-btn-on-fill: var(--picky-color-white);
+        --picky-btn-line: var(--picky-color-red-600);
+        --picky-btn-on-line: var(--picky-color-red-600);
+        --picky-btn-accent: var(--picky-color-red-600);
+        --picky-btn-ring-soft: var(--picky-color-red-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-red-400);
+                --picky-btn-on-line: var(--picky-color-red-400);
+                --picky-btn-accent: var(--picky-color-red-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-red-400);
+            --picky-btn-on-line: var(--picky-color-red-400);
+            --picky-btn-accent: var(--picky-color-red-400);
+        }
+    }
+
+    /* Yellow is intrinsically light: a filled warning button needs dark text, and
+       as a line or text colour the -500 is far too pale to read on white. */
+    .picky-button[data-color='warning'] {
+        --picky-shadow-color: var(--picky-color-yellow-500);
+        --picky-btn-fill: var(--picky-color-yellow-400);
+        --picky-btn-fill-hover: var(--picky-color-yellow-500);
+        --picky-btn-on-fill: var(--picky-color-yellow-950);
+        --picky-btn-line: var(--picky-color-yellow-700);
+        --picky-btn-on-line: var(--picky-color-yellow-700);
+        --picky-btn-accent: var(--picky-color-yellow-700);
+        --picky-btn-ring-soft: var(--picky-color-yellow-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-yellow-500);
+                --picky-btn-on-line: var(--picky-color-yellow-300);
+                --picky-btn-accent: var(--picky-color-yellow-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-yellow-500);
+            --picky-btn-on-line: var(--picky-color-yellow-300);
+            --picky-btn-accent: var(--picky-color-yellow-400);
+        }
+    }
+
+    .picky-button[data-color='info'] {
+        --picky-shadow-color: var(--picky-color-teal-700);
+        --picky-btn-fill: var(--picky-color-teal-700);
+        --picky-btn-fill-hover: var(--picky-color-teal-800);
+        --picky-btn-on-fill: var(--picky-color-white);
+        --picky-btn-line: var(--picky-color-teal-700);
+        --picky-btn-on-line: var(--picky-color-teal-700);
+        --picky-btn-accent: var(--picky-color-teal-700);
+        --picky-btn-ring-soft: var(--picky-color-teal-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-teal-500);
+                --picky-btn-on-line: var(--picky-color-teal-300);
+                --picky-btn-accent: var(--picky-color-teal-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-teal-500);
+            --picky-btn-on-line: var(--picky-color-teal-300);
+            --picky-btn-accent: var(--picky-color-teal-400);
+        }
+    }
+
+    .picky-button[data-color='gray'] {
+        --picky-shadow-color: var(--picky-color-neutral-500);
+        --picky-btn-fill: var(--picky-color-neutral-500);
+        --picky-btn-fill-hover: var(--picky-color-neutral-600);
+        --picky-btn-on-fill: var(--picky-color-white);
+        --picky-btn-line: var(--picky-color-neutral-500);
+        --picky-btn-on-line: var(--picky-color-neutral-900);
+        --picky-btn-accent: var(--picky-color-neutral-500);
+        --picky-btn-ring-soft: var(--picky-color-neutral-300);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-btn-line: var(--picky-color-dark-surface-500);
+                --picky-btn-on-line: var(--picky-color-neutral-200);
+                --picky-btn-accent: var(--picky-color-neutral-400);
+            }
+        }
+        .dark & {
+            --picky-btn-line: var(--picky-color-dark-surface-500);
+            --picky-btn-on-line: var(--picky-color-neutral-200);
+            --picky-btn-accent: var(--picky-color-neutral-400);
+        }
+    }
+}

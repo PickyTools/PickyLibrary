@@ -1,9 +1,10 @@
-import { describe, expect, it, beforeAll } from 'vitest';
+import { describe, expect, it, beforeAll, beforeEach } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 import BaseModal from './BaseModal.vue';
+import { resetBodyScrollLock } from '../internal/scrollLock';
 
-// happy-dom kent <dialog> maar implementeert showModal/close niet volledig.
+// happy-dom knows <dialog> but does not fully implement showModal/close.
 beforeAll(() => {
     const proto = window.HTMLDialogElement?.prototype;
     if (proto && typeof proto.showModal !== 'function') {
@@ -16,10 +17,14 @@ beforeAll(() => {
     }
 });
 
+// The scroll lock counts across every modal. Without this reset, one test leaving
+// its modal open would fail the next on a counter that did not start at zero.
+beforeEach(() => resetBodyScrollLock());
+
 describe('BaseModal identity', () => {
-    // Regressie: de id-teller stond in <script setup> en werd dus per instance op 0
-    // gezet, waardoor elke modal id="modal-title-1" kreeg. Twee modals in de DOM
-    // betekende dubbele ids en een aria-labelledby die naar de verkeerde titel wees.
+    // Regression: the id counter lived in <script setup> and so reset to 0 per
+    // instance, giving every modal id="modal-title-1". Two modals in the DOM meant
+    // duplicate ids and an aria-labelledby pointing at the wrong title.
     it('gives every modal a distinct title id within one app', () => {
         const Host = defineComponent({
             components: { BaseModal },
@@ -38,8 +43,8 @@ describe('BaseModal identity', () => {
         w.unmount();
     });
 
-    // Regressie: aria-labelledby verwees ook naar titleId wanneer er geen titel werd
-    // gerenderd — een verwijzing naar een id dat niet bestaat.
+    // Regression: aria-labelledby pointed at titleId even when no title was
+    // rendered -- a reference to an id that does not exist.
     it('omits aria-labelledby when no title element is rendered', () => {
         const w = mount(BaseModal, { props: { modelValue: true, teleportDisabled: true }, attachTo: document.body });
         expect(w.find('dialog').attributes('aria-labelledby')).toBeUndefined();

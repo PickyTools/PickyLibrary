@@ -23,14 +23,14 @@ const openSelect = async () => {
 };
 
 describe('BaseSelect ARIA structure', () => {
-    // Regressie: er waren twee geneste role="listbox" (een div én de ul erin),
-    // terwijl een listbox alleen opties mag bevatten.
+    // Regression: there were two nested role="listbox" elements (a div and the ul
+    // inside it), while a listbox may only contain options.
     it('exposes exactly one listbox', async () => {
         const w = await openSelect();
         expect(w.findAll('[role="listbox"]')).toHaveLength(1);
     });
 
-    // Regressie: de knop verwees nergens naar zijn popup.
+    // Regression: the button pointed at its popup nowhere.
     it('points the trigger at its listbox', async () => {
         const w = await openSelect();
         const controls = w.find('button').attributes('aria-controls');
@@ -57,9 +57,9 @@ describe('BaseSelect ARIA structure', () => {
 });
 
 describe('BaseSelect keyboard navigation', () => {
-    // Regressie, en het zwaarste punt: tijdens pijltjesnavigatie bleef de focus op
-    // de knop en veranderde alleen een CSS-klasse. Zonder aria-activedescendant
-    // hoorde een schermlezergebruiker helemaal niets.
+    // Regression, and the worst of them: during arrow-key navigation focus stayed on
+    // the button and only a CSS class changed. Without aria-activedescendant, a
+    // screen reader user heard nothing at all.
     it('announces the active option through aria-activedescendant', async () => {
         const w = await openSelect();
         const button = w.find('button');
@@ -77,7 +77,7 @@ describe('BaseSelect keyboard navigation', () => {
         const w = await openSelect();
         const button = w.find('button');
         await button.trigger('keydown', { key: 'ArrowDown' });
-        // Van Apple naar Cherry: Banana is disabled en wordt overgeslagen.
+        // Apple to Cherry: Banana is disabled and gets skipped.
         expect(w.find(`#${button.attributes('aria-activedescendant')}`).text()).toBe('Cherry');
     });
 

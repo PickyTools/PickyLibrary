@@ -1,22 +1,39 @@
 <template>
-    <span :class="[baseClasses, sizeClasses, colorClasses]">
+    <span
+        class="picky-pill"
+        :data-size="size"
+        :data-color="color"
+        :data-background="background"
+    >
         <slot>{{ label }}</slot>
     </span>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { BaseComponentProps, Color, Size } from '../types';
+import type { BaseComponentProps, Color } from '../types';
 
+/*
+ * All styling lives in styles/components/pill.css. This component only decides
+ * which data attributes go on the element -- no class name is computed here. That
+ * is deliberate: it makes the stylesheet the shared truth, so a React or Angular
+ * version can later use exactly the same one.
+ */
+defineOptions({ name: 'BasePill' });
+
+defineSlots<{
+    /** Replaces the label. */
+    default?(): unknown;
+}>();
+
+/** Tunes the colours for a light or dark surface. */
 type Background = 'light' | 'dark';
 
-const props = withDefaults(
+withDefaults(
     defineProps<
         BaseComponentProps & {
-            /** Tekst in de pill. Negeerbaar wanneer je de default slot vult. */
+            /** Text in the pill. Ignored when you fill the default slot. */
             label?: string;
             color?: Color;
-            /** Stemt de kleuren af op een lichte of donkere ondergrond. */
             background?: Background;
         }
     >(),
@@ -27,46 +44,4 @@ const props = withDefaults(
         background: 'light',
     }
 );
-
-const baseClasses = 'picky:inline-block picky:rounded-small';
-
-const sizeMap: Record<Size, string> = {
-    xs: 'picky:py-[1px] picky:px-1.5 picky:text-[10px] picky:font-semibold',
-    sm: 'picky:py-[2px] picky:px-2 picky:text-xs picky:font-semibold',
-    md: 'picky:py-1 picky:px-2 picky:text-sm picky:font-semibold',
-    lg: 'picky:py-1 picky:px-3 picky:text-base picky:font-semibold',
-};
-
-const colorMap: Record<Color, Record<Background, string>> = {
-    primary: {
-        light: 'picky:bg-primary-500/15 picky:text-primary-500',
-        dark: 'picky:bg-primary-500/30 picky:text-primary-400',
-    },
-    secondary: {
-        light: 'picky:bg-secondary-500/15 picky:text-secondary-500',
-        dark: 'picky:bg-secondary-500/30 picky:text-secondary-400',
-    },
-    success: {
-        light: 'picky:bg-green-500/15 picky:text-green-500',
-        dark: 'picky:bg-green-500/30 picky:text-green-300',
-    },
-    danger: {
-        light: 'picky:bg-red-500/15 picky:text-red-500',
-        dark: 'picky:bg-red-500/20 picky:text-red-500',
-    },
-    gray: {
-        light: 'picky:bg-neutral-500/15 picky:text-neutral-500',
-        dark: 'picky:bg-neutral-500/40 picky:text-neutral-400',
-    },
-};
-
-const sizeClasses = computed(() => sizeMap[props.size]);
-const colorClasses = computed(() => colorMap[props.color][props.background]);
-
-defineOptions({ name: 'BasePill' });
-
-defineSlots<{
-    /** Vervangt het label. */
-    default(): unknown;
-}>();
 </script>

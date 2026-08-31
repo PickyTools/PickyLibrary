@@ -47,8 +47,9 @@ describe('BaseIcon resolver paths', () => {
 });
 
 describe('BaseIcon does not assume a Font Awesome-shaped icon set', () => {
-    // Regressie: de vorige implementatie forceerde fill="currentColor" op elke SVG.
-    // Omdat het eerste dubbele attribuut wint, maakte dat stroke-sets tot dichte blobs.
+    // Regression: the previous implementation forced fill="currentColor" onto every
+    // SVG. Since the first of two duplicate attributes wins, that turned stroke-based
+    // sets into solid blobs.
     it('leaves a stroke-based icon untouched', async () => {
         const w = mountWith(() => LUCIDE);
         await flush();
@@ -63,15 +64,17 @@ describe('BaseIcon does not assume a Font Awesome-shaped icon set', () => {
         expect(w.find('svg').attributes('fill')).toBe('currentColor');
     });
 
+    // The size comes from icon.css through data-size; only a non-square ratio is a
+    // runtime value and therefore stays an inline token.
     it('is square by default rather than Font Awesome’s 1.25:1', () => {
-        const style = mountWith(() => FA_SOLID).attributes('style') ?? '';
-        expect(style).toContain('height: 1rem');
-        expect(style).toContain('width: 1rem');
+        const w = mountWith(() => FA_SOLID);
+        expect(w.attributes('data-size')).toBe('md');
+        expect(w.attributes('style')).toBeUndefined();
     });
 
     it('accepts a ratio for sets that draw wider than tall', () => {
         const style = mountWith(() => FA_SOLID, { ratio: 1.25 }).attributes('style') ?? '';
-        expect(style).toContain('calc(1rem * 1.25)');
+        expect(style).toContain('--picky-icon-ratio: 1.25');
     });
 
     it('treats variant as optional', () => {
@@ -82,8 +85,8 @@ describe('BaseIcon does not assume a Font Awesome-shaped icon set', () => {
 });
 
 describe('BaseIcon caching', () => {
-    // Regressie: de cache stond in <script setup> en was dus per instance. Veertig
-    // iconen op een pagina gaven veertig requests voor hetzelfde bestand.
+    // Regression: the cache lived in <script setup> and so existed per instance.
+    // Forty icons on a page made forty requests for the same file.
     it('fetches a repeated icon only once across instances', async () => {
         const fetchMock = vi.fn(async () => ({ ok: true, text: async () => FA_SOLID }) as unknown as Response);
         vi.stubGlobal('fetch', fetchMock);

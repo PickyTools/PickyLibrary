@@ -1,0 +1,51 @@
+/* BaseIcon -- a square box the resolver drops an SVG into.
+ *
+ * The size comes from `data-size`, the width-to-height ratio from a token the
+ * component only sets when it differs from 1. So for the common case -- square --
+ * no inline style is left at all.
+ */
+
+@layer picky-components {
+    .picky-icon {
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
+        line-height: 1;
+        color: currentcolor;
+
+        height: var(--picky-icon-size);
+        width: calc(var(--picky-icon-size) * var(--picky-icon-ratio, 1));
+    }
+
+    .picky-icon[data-size='xs'] {
+        --picky-icon-size: 0.75rem;
+    }
+    .picky-icon[data-size='sm'] {
+        --picky-icon-size: 0.875rem;
+    }
+    .picky-icon[data-size='md'] {
+        --picky-icon-size: 1rem;
+    }
+    .picky-icon[data-size='lg'] {
+        --picky-icon-size: 1.125rem;
+    }
+
+    /* Fetched markup is inserted here; `contents` removes this wrapper from layout
+       so the SVG lines up as if it were a direct child. */
+    .picky-icon__markup {
+        display: contents;
+    }
+
+    /* Both sources carry this class: a component icon gets it in the template, and
+       fetched markup gets it from prepareSvg(). Selecting on structure would not work
+       here -- `display: contents` changes rendering, not the DOM tree, so the SVG
+       stays a child of the wrapper. */
+    .picky-icon-svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+}

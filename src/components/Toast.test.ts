@@ -44,9 +44,9 @@ describe('useToast', () => {
 });
 
 describe('ToastContainer live regions', () => {
-    // Regressie: elke toast droeg zelf role="alert" + aria-live="assertive" binnen een
+    // Regression: every toast carried role="alert" + aria-live="assertive" itself
     // polite container. Geneste live regions geven per schermlezer dubbele of juist
-    // weggevallen aankondigingen; urgentie hoort op regioniveau te staan.
+    // dropped announcements; urgency belongs at region level.
     it('routes toasts to a polite or an assertive region', () => {
         addToast({ title: 'Polite', style: 'info' });
         addToast({ title: 'Urgent', style: 'danger' });
@@ -64,7 +64,7 @@ describe('ToastContainer live regions', () => {
         addToast({ title: 'Polite' });
         const w = mount(ToastContainer, { props: { disabled: true }, global: { provide } });
         const inner = w.findAll('[aria-live]');
-        expect(inner).toHaveLength(2); // alleen de twee regio's
+        expect(inner).toHaveLength(2); // only the two regions
     });
 
     it('can render in place instead of teleporting', () => {

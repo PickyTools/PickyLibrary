@@ -1,4 +1,4 @@
-/* Alleen pagina-chrome. De componenten zelf hebben hier niets van nodig. */
+/* Page chrome only. The components themselves need none of this. */
 body {
     margin: 0;
     font-family: system-ui, sans-serif;

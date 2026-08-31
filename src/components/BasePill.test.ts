@@ -12,15 +12,18 @@ describe('BasePill', () => {
         expect(w.text()).toBe('Alpha');
     });
 
-    it('applies size and colour classes', () => {
+    // Size and colour are data attributes, not class names. That is the public
+    // contract pill.css selects on -- and a React version would too.
+    it('exposes size and colour as data attributes', () => {
         const w = mount(BasePill, { props: { label: 'x', size: 'lg', color: 'danger' } });
-        expect(w.classes()).toContain('picky:px-3');
-        expect(w.classes()).toContain('picky:bg-red-500/15');
+        expect(w.classes()).toContain('picky-pill');
+        expect(w.attributes('data-size')).toBe('lg');
+        expect(w.attributes('data-color')).toBe('danger');
     });
 
     it('switches palette on a dark background', () => {
         const w = mount(BasePill, { props: { label: 'x', background: 'dark' } });
-        expect(w.classes()).toContain('picky:bg-primary-500/30');
+        expect(w.attributes('data-background')).toBe('dark');
     });
 
     // Fallthrough is easy to break with inheritAttrs; pin it per component.

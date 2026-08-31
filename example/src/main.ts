@@ -1,4 +1,4 @@
-// Dit is de volledige setup. Geen Tailwind, geen preset, geen build-configuratie.
+// This is the whole setup. No Tailwind, no preset, no build configuration.
 import 'pickylibrary/style.css';
 import './app.css';
 

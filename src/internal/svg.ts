@@ -1,11 +1,11 @@
 /**
- * Bereidt een opgehaalde of meegegeven SVG-string voor op inline gebruik.
+ * Prepares a fetched or supplied SVG string for inline use.
  *
- * De ColorPicky-versie forceerde `fill="currentColor"` op elke SVG. Bij dubbele
- * attributen wint in HTML de eerste, dus dat overschreef de `fill="none"` van
- * stroke-gebaseerde sets — Lucide, Feather en Phosphor-thin werden er dichte blobs
- * van. We vullen `fill` daarom alleen aan wanneer de SVG zelf nergens `fill` of
- * `stroke` declareert, wat precies de fill-gebaseerde sets zijn (o.a. Font Awesome).
+ * An earlier version forced `fill="currentColor"` onto every SVG. HTML keeps the
+ * first of two duplicate attributes, so that overrode the `fill="none"` of
+ * stroke-based sets, turning Lucide, Feather and Phosphor-thin into solid blobs.
+ * `fill` is therefore only added when the SVG declares no `fill` or `stroke` of its
+ * own -- which is exactly the fill-based sets, Font Awesome among them.
  */
 export function prepareSvg(raw: string): string {
     const declaresPaint = /\s(?:fill|stroke)\s*=/.test(raw);
@@ -14,16 +14,16 @@ export function prepareSvg(raw: string): string {
     return raw.replace(/<svg\b/i, (tag) => `${tag} class="picky-icon-svg"${extra}`);
 }
 
-/** Herkent of een resolver-string markup is in plaats van een URL. */
+/** Tells whether a resolver returned markup rather than a URL. */
 export function isSvgMarkup(value: string): boolean {
     return /^\s*<svg[\s>]/i.test(value);
 }
 
 /**
- * Module-scope cache. In de ColorPicky-versie stond deze binnen `<script setup>`,
- * wat betekent dat hij per instance werd aangemaakt: veertig iconen op een pagina
- * gaven veertig requests voor hetzelfde bestand. Hier is hij echt gedeeld, en
- * gelijktijdige aanvragen voor dezelfde URL delen één promise.
+ * Module-scope cache. An earlier version kept this inside `<script setup>`, which
+ * means it was created per instance: forty icons on a page made forty requests for
+ * the same file. Here it is genuinely shared, and concurrent requests for the same
+ * URL share a single promise.
  */
 const cache = new Map<string, string>();
 const inFlight = new Map<string, Promise<string | null>>();
@@ -64,7 +64,7 @@ export function fetchSvg(url: string): Promise<string | null> {
     return request;
 }
 
-/** Alleen voor tests. */
+/** For tests only. */
 export function clearSvgCache(): void {
     cache.clear();
     inFlight.clear();

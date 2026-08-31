@@ -1,0 +1,172 @@
+/* BaseModal -- built on the native <dialog>.
+ *
+ * That brings the focus trap, the top layer and Escape from the platform. There is
+ * deliberately no fallback for browsers without <dialog>: this stylesheet already
+ * requires cascade layers and color-mix(), and that bar sits higher.
+ */
+
+@layer picky-components {
+    .picky-modal {
+        position: relative;
+        margin: auto;
+        padding: 0;
+        border: 0;
+        max-height: calc(100dvh - 1rem);
+        width: calc(100vw - 2rem);
+        max-width: calc(100vw - 2rem);
+        overflow: hidden;
+        color: inherit;
+        background: var(--picky-color-light-surface-50);
+        border-radius: var(--picky-radius-container);
+        box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    }
+
+    @media (width >= 40rem) {
+        .picky-modal {
+            max-height: calc(100dvh - 2rem);
+            width: 100%;
+        }
+    }
+
+    @media (width >= 48rem) {
+        .picky-modal[data-size='sm'] {
+            max-width: 24rem;
+        }
+        .picky-modal[data-size='md'] {
+            max-width: 32rem;
+        }
+        .picky-modal[data-size='lg'] {
+            max-width: 42rem;
+        }
+    }
+
+    :where(.dark) .picky-modal {
+        background: var(--picky-color-dark-surface-800);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) .picky-modal {
+            background: var(--picky-color-dark-surface-800);
+        }
+    }
+
+    /* ── Parts ──────────────────────────────────────────────────────────────
+     * The header and footer stay put; only the middle scrolls. Hence min-height: 0
+     * -- without it a flex child refuses to shrink below its content and the panel
+     * scrolls as a whole instead.
+     */
+
+    .picky-modal__panel {
+        display: flex;
+        max-height: inherit;
+        min-height: 0;
+        flex-direction: column;
+    }
+
+    .picky-modal__header,
+    .picky-modal__footer {
+        display: flex;
+        flex-shrink: 0;
+        padding: 1rem 1.5rem;
+        border-color: var(--picky-color-neutral-200);
+    }
+
+    .picky-modal__header {
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid var(--picky-color-neutral-200);
+    }
+
+    .picky-modal__footer {
+        justify-content: flex-end;
+        gap: 0.75rem;
+        border-top: 1px solid var(--picky-color-neutral-200);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) .picky-modal__header,
+        :root:not(.light) .picky-modal__footer {
+            border-color: var(--picky-color-dark-surface-700);
+        }
+    }
+    .dark .picky-modal__header,
+    .dark .picky-modal__footer {
+        border-color: var(--picky-color-dark-surface-700);
+    }
+
+    .picky-modal__title {
+        color: var(--picky-color-text-heading);
+        font-size: var(--picky-text-lg);
+        line-height: var(--picky-text-lg--line-height);
+        font-weight: 600;
+    }
+
+    .picky-modal__close {
+        margin-left: auto;
+        height: 2rem;
+        width: 2rem;
+        color: var(--picky-color-text-muted);
+    }
+
+    .picky-modal__close:hover {
+        background-color: var(--picky-color-neutral-100);
+        color: var(--picky-color-text-heading);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not(.light) .picky-modal__close:hover {
+            background-color: var(--picky-color-dark-surface-700);
+        }
+    }
+    .dark .picky-modal__close:hover {
+        background-color: var(--picky-color-dark-surface-700);
+    }
+
+    .picky-modal__body {
+        min-height: 0;
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.25rem 1.5rem;
+        color: var(--picky-color-text-body);
+    }
+
+    /* ── Animation ──────────────────────────────────────────────────────────
+     * Names are prefixed so they cannot collide with a consumer's own keyframes.
+     */
+
+    .picky-modal::backdrop {
+        background: rgb(0 0 0 / 0.5);
+        animation: picky-modal-backdrop-in 200ms ease-out forwards;
+    }
+
+    .picky-modal[open] {
+        animation: picky-modal-in 200ms ease-out forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .picky-modal[open],
+        .picky-modal::backdrop {
+            animation: none;
+        }
+    }
+}
+
+@keyframes picky-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(-0.5rem) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes picky-modal-backdrop-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

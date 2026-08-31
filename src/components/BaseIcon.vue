@@ -1,23 +1,20 @@
 <template>
     <span
-        v-bind="$attrs"
-        :class="['picky:relative picky:inline-flex picky:shrink-0 picky:items-center picky:justify-center picky:align-middle picky:leading-none picky:text-current', $attrs.class]"
-        :style="boxStyle"
+        v-bind="rest"
+        :class="['picky-icon', $attrs.class]"
+        :style="ratio === 1 ? undefined : { '--picky-icon-ratio': String(ratio) }"
+        :data-size="size"
         :role="label ? 'img' : undefined"
         :aria-label="label || undefined"
         :aria-hidden="label ? undefined : 'true'"
     >
         <component :is="resolved" v-if="isComponent" class="picky-icon-svg" />
-        <span
-            v-else-if="markup"
-            class="picky:contents"
-            v-html="markup"
-        />
+        <span v-else-if="markup" class="picky-icon__markup" v-html="markup" />
     </span>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useAttrs, watch } from 'vue';
 import type { Size } from '../types';
 import { useIconResolver } from '../icons';
 import { fetchSvg, isSvgMarkup, prepareSvg } from '../internal/svg';
@@ -26,40 +23,34 @@ defineOptions({ name: 'BaseIcon', inheritAttrs: false });
 
 const props = withDefaults(
     defineProps<{
-        /** Naam van het icoon, doorgegeven aan je resolver. */
+        /** Name of the icon, handed to your resolver. */
         code: string;
-        /** Optionele stijlvariant (`solid`, `regular`, …). Alleen zinvol als jouw bron varianten kent. */
+        /** Optional style variant (`solid`, `regular`, ...). Only useful if your source has them. */
         variant?: string;
         size?: Size;
         /**
-         * Breedte gedeeld door hoogte. Standaard 1 (vierkant), wat klopt voor de
-         * meeste sets. Font Awesome tekent gemiddeld breder dan hoog; gebruik dan
-         * bijvoorbeeld 1.25 om dezelfde optische maat te krijgen als voorheen.
+         * Width divided by height. Defaults to 1 (square), which is right for most
+         * sets. Font Awesome draws wider than tall on average, so 1.25 gets you the
+         * same optical size there.
          */
         ratio?: number;
         /**
-         * Laat het icoon zelf een toegankelijke naam dragen. Zonder dit is het
-         * decoratief (`aria-hidden`) en moet de naam van het omliggende element komen —
-         * wat het juiste patroon is voor een icoon ín een knop.
+         * Gives the icon an accessible name of its own. Without it the icon is
+         * decorative (`aria-hidden`) and the name has to come from the surrounding
+         * element -- which is the right pattern for an icon inside a button.
          */
         label?: string;
     }>(),
     { variant: undefined, size: 'md', ratio: 1, label: '' }
 );
 
-const sizeMap: Record<Size, string> = {
-    xs: '0.75rem',
-    sm: '0.875rem',
-    md: '1rem',
-    lg: '1.125rem',
-};
+const attrs = useAttrs();
 
-const boxStyle = computed(() => {
-    const height = sizeMap[props.size];
-    return {
-        height,
-        width: props.ratio === 1 ? height : `calc(${height} * ${props.ratio})`,
-    };
+// class goes through the :class above; everything else passes through unchanged,
+// minus class, so it is not applied twice.
+const rest = computed(() => {
+    const { class: _class, ...others } = attrs;
+    return others;
 });
 
 const resolve = useIconResolver();
@@ -86,13 +77,3 @@ watch(
     { immediate: true }
 );
 </script>
-
-<style>
-/* Niet scoped: de SVG komt via v-html of <component :is> binnen en draagt dus
-   geen scope-attribuut. Bewust smal gehouden tot onze eigen class. */
-.picky-icon-svg {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-</style>

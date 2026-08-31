@@ -1,227 +1,221 @@
-/* PickyLibrary — stylesheet
+/* PickyLibrary -- stylesheet
  *
- * Alles wordt geprefixt met `picky`. Dat doet dubbel werk: utility-klassen worden
- * `picky:flex`, en theme-tokens worden `--picky-color-primary-500`. Die tokens zijn
- * het publieke contract — overschrijf ze in je eigen `:root` en de hele library volgt.
+ * Everything is prefixed with `picky`: component classes such as `.picky-button`,
+ * and tokens such as `--picky-color-primary-500`. Those tokens are the public
+ * contract -- override them in your own `:root` and the whole library follows.
+ * See STYLING.md.
  *
- * Bewust GEEN preflight: een library hoort de reset van de consument niet te overrulen.
+ * Hand-written CSS, no build step. The library used Tailwind for this, but once the
+ * components rendered semantic classes it was doing only one thing: prefixing the
+ * tokens. They are simply written out now.
+ *
+ * Deliberately NO global reset: a library has no business overruling the consumer's
+ * own reset. Only the elements we render ourselves are neutralised, through
+ * `.picky-reset`.
  */
 
-/* Eigen cascade-layers. Twee redenen:
- *  - Ongelaagde CSS wint altijd van gelaagde CSS, ongeacht importvolgorde. Een
- *    consument die `--picky-*` in zijn eigen `:root` zet wint dus altijd — ook als
- *    zijn stylesheet eerder laadt dan de onze.
- *  - Eigen namen (niet `theme`/`utilities`) zodat we niet samensmelten met de
- *    Tailwind-layers van een consument die zelf ook Tailwind draait. */
-@layer picky-theme, picky-components, picky-utilities;
+/* Our own cascade layers, for two reasons:
+ *  - Unlayered CSS always beats layered CSS, whatever the import order. A consumer
+ *    who sets `--picky-*` in their own `:root` therefore always wins, even if their
+ *    stylesheet loads before ours.
+ *  - Distinct names, so we do not merge with the layers of a consumer running
+ *    Tailwind or another framework themselves. */
+@layer picky-theme, picky-components;
 
-@import 'tailwindcss/theme.css' layer(picky-theme) prefix(picky);
-@import 'tailwindcss/utilities.css' layer(picky-utilities);
-
-/* Dark mode werkt out-of-the-box op de systeemvoorkeur, en is te overrulen met een
- * class. `.dark` forceert donker, `.light` forceert licht (ook als het OS donker wil).
- * Zo hoeft een consument niets te configureren, maar kan hij wel een toggle bouwen. */
-@custom-variant dark {
-    @media (prefers-color-scheme: dark) {
-        &:where(:not(.light, .light *)) {
-            @slot;
-        }
-    }
-    &:where(.dark, .dark *) {
-        @slot;
-    }
-}
-
-/* Schaduwstijl. Zet `data-picky-shadow` op <html>, of op een willekeurige voorouder
- * (of op het component zelf) om een deel af te laten wijken. Zonder attribuut: soft.
+/* One stylesheet per component. They place themselves in @layer picky-components.
  *
- * Bewust via custom properties in plaats van selectors: custom properties erven van
- * de *dichtstbijzijnde* voorouder die ze zet. Met descendant-selectors zouden een
- * voorouder op `hard` en een knop op `soft` allebei matchen en zou bronvolgorde
- * beslissen in plaats van nabijheid — precies verkeerd. Zo is de schaduwstijl puur
- * CSS én correct nestbaar, zonder een regel JavaScript. */
-:root {
-    /* Standaard: soft. Vorm en dekking staan los van de kleur — zie de opmerking
-       bij .picky-pressable waarom dat moet. */
-    --picky-shadow-color: currentcolor;
-    --picky-shadow-offset: 0 10px 15px -3px;
-    --picky-shadow-alpha: 15%;
-    --picky-press-offset: 0 10px 15px -3px;
-    --picky-press-alpha: 15%;
-    --picky-press-transform: scale(0.96);
-}
+ * Mind the order: an @import is required to come first, so these lines land in the
+ * cascade before the shared .picky-reset and .picky-pressable at the bottom of this
+ * file. A component rule that needs to beat either of those therefore needs two
+ * classes in its selector (`.picky-button .picky-button__inner`), not one. That is
+ * why a few rules look more specific than they need to be. */
+@import './components/close-button.css';
 
-[data-picky-shadow='soft'] {
-    --picky-shadow-offset: 0 10px 15px -3px;
-    --picky-shadow-alpha: 15%;
-    --picky-press-offset: 0 10px 15px -3px;
-    --picky-press-alpha: 15%;
-    --picky-press-transform: scale(0.96);
-}
+@import './components/alert.css';
+@import './components/button.css';
+@import './components/checkbox.css';
+@import './components/icon.css';
+@import './components/input.css';
+@import './components/modal.css';
+@import './components/pill.css';
+@import './components/select.css';
+@import './components/switch.css';
+@import './components/toast.css';
 
-[data-picky-shadow='hard'] {
-    --picky-shadow-offset: 0 4px 0 0;
-    --picky-shadow-alpha: 40%;
-    --picky-press-offset: 0 0 0 0;
-    --picky-press-alpha: 0%;
-    --picky-press-transform: scaleY(0.95) translateY(0.25rem);
-}
+@layer picky-theme {
+    :root {
+        /* ── Primary ────────────────────────────────────────────────
+           The library's accent. `-text` is the text colour on top of a primary fill. */
+        --picky-color-primary-50: #eff6ff;
+        --picky-color-primary-100: #dbeafe;
+        --picky-color-primary-200: #bfdbfe;
+        --picky-color-primary-300: #93c5fd;
+        --picky-color-primary-400: #60a5fa;
+        --picky-color-primary-500: #3b82f6;
+        --picky-color-primary-600: #2563eb;
+        --picky-color-primary-700: #1d4ed8;
+        --picky-color-primary-800: #1e40af;
+        --picky-color-primary-900: #1e3a8a;
+        --picky-color-primary-950: #172554;
+        --picky-color-primary-text: #fff;
 
-[data-picky-shadow='none'] {
-    --picky-shadow-offset: 0 0 0 0;
-    --picky-shadow-alpha: 0%;
-    --picky-press-offset: 0 0 0 0;
-    --picky-press-alpha: 0%;
-    --picky-press-transform: scale(0.96);
-}
+        /* ── Secondary ─────────────────────────────────────────────── */
+        --picky-color-secondary-50: #f8fafc;
+        --picky-color-secondary-100: #f1f5f9;
+        --picky-color-secondary-200: #e2e8f0;
+        --picky-color-secondary-300: #cbd5e1;
+        --picky-color-secondary-400: #94a3b8;
+        --picky-color-secondary-500: #64748b;
+        --picky-color-secondary-600: #475569;
+        --picky-color-secondary-700: #334155;
+        --picky-color-secondary-800: #1e293b;
+        --picky-color-secondary-900: #0f172a;
+        --picky-color-secondary-950: #020617;
+        --picky-color-secondary-text: #fff;
 
-@layer picky-components {
-    /* PickyLibrary stuurt bewust geen preflight mee: een library hoort de reset van
-       de consument niet te overrulen. Maar zonder reset komt de native browserstyling
-       van <button> en <input> door de componenten heen — een grijze vulling, een
-       tweede rand, een ander lettertype. Daarom neutraliseren we uitsluitend de
-       elementen die we zelf renderen, en niets daarbuiten. */
-    .picky-reset {
-        appearance: none;
-        -webkit-appearance: none;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        background: none;
-        color: inherit;
-        font: inherit;
-        line-height: inherit;
-        letter-spacing: inherit;
-        text-align: inherit;
-        text-transform: inherit;
-    }
+        /* ── Surfaces ───────────────────────────────────────────────
+           light-surface carries light mode, dark-surface carries dark mode. */
+        --picky-color-light-surface-50: #fff;
+        --picky-color-light-surface-100: #fafafa;
+        --picky-color-light-surface-200: #f4f4f5;
+        --picky-color-light-surface-300: #e4e4e7;
+        --picky-color-light-surface-400: #d4d4d8;
+        --picky-color-light-surface-500: #a1a1aa;
+        --picky-color-light-surface-600: #71717a;
+        --picky-color-light-surface-700: #52525b;
+        --picky-color-light-surface-800: #3f3f46;
+        --picky-color-light-surface-900: #27272a;
+        --picky-color-light-surface-950: #18181b;
+        --picky-color-dark-surface-50: #fafaf9;
+        --picky-color-dark-surface-100: #f5f5f4;
+        --picky-color-dark-surface-200: #e7e5e4;
+        --picky-color-dark-surface-300: #d6d3d1;
+        --picky-color-dark-surface-400: #a8a29e;
+        --picky-color-dark-surface-500: #78716c;
+        --picky-color-dark-surface-600: #57534e;
+        --picky-color-dark-surface-700: #44403c;
+        --picky-color-dark-surface-800: #292524;
+        --picky-color-dark-surface-900: #1c1917;
+        --picky-color-dark-surface-950: #0c0a09;
 
-    /* De color-mix staat hier en niet in een custom property hierboven. Reden:
-       `var()` binnen een custom property wordt gesubstitueerd op het element waar
-       die property gedeclareerd is. Zou --picky-shadow de kleur al mengen, dan
-       gebeurde dat op <html> — waar --picky-shadow-color nog `currentcolor` is —
-       en zou de kleur die het component zelf zet nooit aankomen. Door alleen vorm
-       en dekking te laten erven en pas hier te mengen, klopt zowel de nabijheid
-       (via erfelijkheid) als de kleur (via het component). */
-    .picky-pressable {
-        box-shadow: var(--picky-shadow-offset)
-            color-mix(in oklab, var(--picky-shadow-color) var(--picky-shadow-alpha), transparent);
-        transition: transform 100ms;
-    }
+        /* ── Semantic text colours ──────────────────────────────────
+           Use these, never a hard-coded light/dark pair, because such a pair does
+           not follow the tokens. */
+        --picky-color-text-heading: #111827;
+        --picky-color-text-body: #374151;
+        --picky-color-text-muted: #6b7280;
+        --picky-color-text-caption: #6a6f78;
 
-    .picky-pressable:active {
-        box-shadow: var(--picky-press-offset)
-            color-mix(in oklab, var(--picky-shadow-color) var(--picky-press-alpha), transparent);
-        transform: var(--picky-press-transform);
-    }
+        /* ── Focus ──────────────────────────────────────────────────
+           A visible focus indicator is a requirement, not an option (WCAG 2.4.7).
+           Override them freely, but do not set them to transparent. */
+        --picky-color-focus-ring: #3b82f6;
+        --picky-focus-ring-width: 2px;
+        --picky-focus-ring-offset: 2px;
 
-    [aria-disabled='true'] .picky-pressable,
-    [aria-disabled='true'] .picky-pressable:active {
-        box-shadow: none;
-        transform: none;
-    }
+        /* ── Corners ────────────────────────────────────────────────
+           Six tokens drive the whole library. */
+        --picky-radius-button: .5rem;
+        --picky-radius-container: 1rem;
+        --picky-radius-inner-container: .5rem;
+        --picky-radius-small: .375rem;
+        --picky-radius-switch-track: 16px;
+        --picky-radius-switch-knob: 12px;
 
-    @media (prefers-reduced-motion: reduce) {
-        .picky-pressable,
-        .picky-pressable:active {
-            transition: none;
-            transform: none;
-        }
-    }
-}
+        /* ── Typography ─────────────────────────────────────────────
+           Headings inside the library only; body text inherits from your app. */
+        --picky-font-heading: inherit;
+        --picky-font-weight-heading: 600;
 
-@theme static {
-    /* ── Primary ────────────────────────────────────────────────
-       Overschrijf met --picky-color-primary-500 etc. */
-    --color-primary-50: #eff6ff;
-    --color-primary-100: #dbeafe;
-    --color-primary-200: #bfdbfe;
-    --color-primary-300: #93c5fd;
-    --color-primary-400: #60a5fa;
-    --color-primary-500: #3b82f6;
-    --color-primary-600: #2563eb;
-    --color-primary-700: #1d4ed8;
-    --color-primary-800: #1e40af;
-    --color-primary-900: #1e3a8a;
-    --color-primary-950: #172554;
-    /* Tekstkleur bovenop een primary-vlak. */
-    --color-primary-text: #ffffff;
+        /* ── Text sizes ─────────────────────────────────────────────
+           Each size carries its own line height, so changing one token does not pull
+           the vertical rhythm apart. */
+        --picky-text-xs: .75rem;
+        --picky-text-xs--line-height: calc(1 / .75);
+        --picky-text-sm: .875rem;
+        --picky-text-sm--line-height: calc(1.25 / .875);
+        --picky-text-base: 1rem;
+        --picky-text-base--line-height: 1.5 ;
+        --picky-text-lg: 1.125rem;
+        --picky-text-lg--line-height: calc(1.75 / 1.125);
+        --picky-text-xl: 1.25rem;
+        --picky-text-xl--line-height: calc(1.75 / 1.25);
 
-    /* ── Secondary ─────────────────────────────────────────────── */
-    --color-secondary-50: #f8fafc;
-    --color-secondary-100: #f1f5f9;
-    --color-secondary-200: #e2e8f0;
-    --color-secondary-300: #cbd5e1;
-    --color-secondary-400: #94a3b8;
-    --color-secondary-500: #64748b;
-    --color-secondary-600: #475569;
-    --color-secondary-700: #334155;
-    --color-secondary-800: #1e293b;
-    --color-secondary-900: #0f172a;
-    --color-secondary-950: #020617;
-    --color-secondary-text: #ffffff;
+        /* ── Palette ────────────────────────────────────────────────
+           These ramps are owned by the library, not inherited. Every shade from 50 to
+           950 always exists, so you can build on them without reservation. */
+        --picky-color-neutral-50: oklch(98.5% 0 none);
+        --picky-color-neutral-100: oklch(97% 0 none);
+        --picky-color-neutral-200: oklch(92.2% 0 none);
+        --picky-color-neutral-300: oklch(87% 0 none);
+        --picky-color-neutral-400: oklch(70.8% 0 none);
+        --picky-color-neutral-500: oklch(55.6% 0 none);
+        --picky-color-neutral-600: oklch(43.9% 0 none);
+        --picky-color-neutral-700: oklch(37.1% 0 none);
+        --picky-color-neutral-800: oklch(26.9% 0 none);
+        --picky-color-neutral-900: oklch(20.5% 0 none);
+        --picky-color-neutral-950: oklch(14.5% 0 none);
+        --picky-color-green-50: oklch(98.2% .018 155.826);
+        --picky-color-green-100: oklch(96.2% .044 156.743);
+        --picky-color-green-200: oklch(92.5% .084 155.995);
+        --picky-color-green-300: oklch(87.1% .15 154.449);
+        --picky-color-green-400: oklch(79.2% .209 151.711);
+        --picky-color-green-500: oklch(72.3% .219 149.579);
+        --picky-color-green-600: oklch(62.7% .194 149.214);
+        --picky-color-green-700: oklch(52.7% .154 150.069);
+        --picky-color-green-800: oklch(44.8% .119 151.328);
+        --picky-color-green-900: oklch(39.3% .095 152.535);
+        --picky-color-green-950: oklch(26.6% .065 152.934);
+        --picky-color-red-50: oklch(97.1% .013 17.38);
+        --picky-color-red-100: oklch(93.6% .032 17.717);
+        --picky-color-red-200: oklch(88.5% .062 18.334);
+        --picky-color-red-300: oklch(80.8% .114 19.571);
+        --picky-color-red-400: oklch(70.4% .191 22.216);
+        --picky-color-red-500: oklch(63.7% .237 25.331);
+        --picky-color-red-600: oklch(57.7% .245 27.325);
+        --picky-color-red-700: oklch(50.5% .213 27.518);
+        --picky-color-red-800: oklch(44.4% .177 26.899);
+        --picky-color-red-900: oklch(39.6% .141 25.723);
+        --picky-color-red-950: oklch(25.8% .092 26.042);
+        --picky-color-yellow-50: oklch(98.7% .026 102.212);
+        --picky-color-yellow-100: oklch(97.3% .071 103.193);
+        --picky-color-yellow-200: oklch(94.5% .129 101.54);
+        --picky-color-yellow-300: oklch(90.5% .182 98.111);
+        --picky-color-yellow-400: oklch(85.2% .199 91.936);
+        --picky-color-yellow-500: oklch(79.5% .184 86.047);
+        --picky-color-yellow-600: oklch(68.1% .162 75.834);
+        --picky-color-yellow-700: oklch(55.4% .135 66.442);
+        --picky-color-yellow-800: oklch(47.6% .114 61.907);
+        --picky-color-yellow-900: oklch(42.1% .095 57.708);
+        --picky-color-yellow-950: oklch(28.6% .066 53.813);
+        --picky-color-blue-50: oklch(97% .014 254.604);
+        --picky-color-blue-100: oklch(93.2% .032 255.585);
+        --picky-color-blue-200: oklch(88.2% .059 254.128);
+        --picky-color-blue-300: oklch(80.9% .105 251.813);
+        --picky-color-blue-400: oklch(70.7% .165 254.624);
+        --picky-color-blue-500: oklch(62.3% .214 259.815);
+        --picky-color-blue-600: oklch(54.6% .245 262.881);
+        --picky-color-blue-700: oklch(48.8% .243 264.376);
+        --picky-color-blue-800: oklch(42.4% .199 265.638);
+        --picky-color-blue-900: oklch(37.9% .146 265.522);
+        --picky-color-blue-950: oklch(28.2% .091 267.935);
+        --picky-color-teal-50: oklch(98.4% .014 180.72);
+        --picky-color-teal-100: oklch(95.3% .051 180.801);
+        --picky-color-teal-200: oklch(91% .096 180.426);
+        --picky-color-teal-300: oklch(85.5% .138 181.071);
+        --picky-color-teal-400: oklch(77.7% .152 181.912);
+        --picky-color-teal-500: oklch(70.4% .14 182.503);
+        --picky-color-teal-600: oklch(60% .118 184.704);
+        --picky-color-teal-700: oklch(51.1% .096 186.391);
+        --picky-color-teal-800: oklch(43.7% .078 188.216);
+        --picky-color-teal-900: oklch(38.6% .063 188.416);
+        --picky-color-teal-950: oklch(27.7% .046 192.524);
+        --picky-color-white: #fff;
+        --picky-color-black: #000;    }
 
-    /* ── Oppervlakken ───────────────────────────────────────────
-       light-surface draagt de lichte modus, dark-surface de donkere. */
-    --color-light-surface-50: #ffffff;
-    --color-light-surface-100: #fafafa;
-    --color-light-surface-200: #f4f4f5;
-    --color-light-surface-300: #e4e4e7;
-    --color-light-surface-400: #d4d4d8;
-    --color-light-surface-500: #a1a1aa;
-    --color-light-surface-600: #71717a;
-    --color-light-surface-700: #52525b;
-    --color-light-surface-800: #3f3f46;
-    --color-light-surface-900: #27272a;
-    --color-light-surface-950: #18181b;
-
-    --color-dark-surface-50: #fafaf9;
-    --color-dark-surface-100: #f5f5f4;
-    --color-dark-surface-200: #e7e5e4;
-    --color-dark-surface-300: #d6d3d1;
-    --color-dark-surface-400: #a8a29e;
-    --color-dark-surface-500: #78716c;
-    --color-dark-surface-600: #57534e;
-    --color-dark-surface-700: #44403c;
-    --color-dark-surface-800: #292524;
-    --color-dark-surface-900: #1c1917;
-    --color-dark-surface-950: #0c0a09;
-
-    /* ── Semantische tekstkleuren ───────────────────────────────
-       Gebruik text-text-heading / body / muted / caption; nooit rauwe
-       dark:text-* paren, want die volgen de tokens niet. */
-    --color-text-heading: #111827;
-    --color-text-body: #374151;
-    --color-text-muted: #6b7280;
-    --color-text-caption: #6a6f78;
-
-    /* ── Focus ──────────────────────────────────────────────────
-       Zichtbare focusindicatie is geen optie maar een eis (WCAG 2.4.7).
-       Deze defaults werken zonder configuratie; overschrijf ze gerust,
-       maar zet ze niet op transparent. */
-    --color-focus-ring: #3b82f6;
-    --focus-ring-width: 2px;
-    --focus-ring-offset: 2px;
-
-    /* ── Radii ──────────────────────────────────────────────────
-       Vier tokens sturen de hele library. */
-    --radius-button: 0.5rem;
-    --radius-container: 1rem;
-    --radius-inner-container: 0.5rem;
-    --radius-small: 0.375rem;
-    --radius-switch-track: 16px;
-    --radius-switch-knob: 12px;
-
-    /* ── Typografie ─────────────────────────────────────────────
-       Alleen voor koppen binnen de library; body-tekst erft van je app. */
-    --font-heading: inherit;
-    --font-weight-heading: 600;
-}
-
-/* Semantische tekstkleuren in donkere modus. Gedefinieerd op :root zodat ze
-   het @theme-blok overschrijven, en achter dezelfde variant als alle andere
-   dark-styling zodat class en systeemvoorkeur allebei werken. */
-@layer base {
+    /* Semantic text colours in dark mode. Only these four change with the theme; the
+       rest of the palette is the same in both and is picked per component. `.light`
+       forces light mode even when the OS asks for dark. */
     @media (prefers-color-scheme: dark) {
         :root:where(:not(.light)) {
             --picky-color-text-heading: var(--picky-color-dark-surface-100);
@@ -237,5 +231,117 @@
         --picky-color-text-body: var(--picky-color-dark-surface-200);
         --picky-color-text-muted: var(--picky-color-dark-surface-400);
         --picky-color-text-caption: var(--picky-color-dark-surface-400);
+    }
+
+    /* ── Shadow style ───────────────────────────────────────────────────────
+     * Put `data-picky-shadow` on <html>, on any ancestor, or on the component itself
+     * to make part of the tree differ. Without the attribute: soft.
+     *
+     * Deliberately through custom properties rather than selectors: custom properties
+     * inherit from the *nearest* ancestor that sets them. With descendant selectors,
+     * an ancestor on `hard` and a button on `soft` would both match and source order
+     * would decide instead of proximity -- exactly backwards. This way the shadow
+     * style is pure CSS and nests correctly, without a line of JavaScript.
+     *
+     * Shape and opacity are kept separate from the colour; see the note on
+     * .picky-pressable for why that is necessary. */
+    :root,
+    [data-picky-shadow='soft'] {
+        --picky-shadow-color: currentcolor;
+        --picky-shadow-offset: 0 10px 15px -3px;
+        --picky-shadow-alpha: 15%;
+        --picky-press-offset: 0 10px 15px -3px;
+        --picky-press-alpha: 15%;
+        --picky-press-transform: scale(0.96);
+    }
+
+    [data-picky-shadow='hard'] {
+        --picky-shadow-offset: 0 4px 0 0;
+        --picky-shadow-alpha: 40%;
+        --picky-press-offset: 0 0 0 0;
+        --picky-press-alpha: 0%;
+        --picky-press-transform: scaleY(0.95) translateY(0.25rem);
+    }
+
+    [data-picky-shadow='none'] {
+        --picky-shadow-offset: 0 0 0 0;
+        --picky-shadow-alpha: 0%;
+        --picky-press-offset: 0 0 0 0;
+        --picky-press-alpha: 0%;
+        --picky-press-transform: scale(0.96);
+    }
+}
+
+@layer picky-components {
+    /* PickyLibrary deliberately ships no global reset: a library has no business
+       overruling the consumer's own. But without one, the native browser styling of
+       <button> and <input> bleeds through the components -- a grey fill, a second
+       border, a different typeface. So we neutralise only the elements we render
+       ourselves, and nothing beyond that. */
+    .picky-reset {
+        appearance: none;
+        -webkit-appearance: none;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        line-height: inherit;
+        letter-spacing: inherit;
+        text-align: inherit;
+        text-transform: inherit;
+    }
+
+    /* The color-mix lives here and not in a custom property above. The reason: a
+       `var()` inside a custom property is substituted on the element where that
+       property is declared. If --picky-shadow already mixed the colour, that would
+       happen on <html> -- where --picky-shadow-color is still `currentcolor` -- and
+       the colour the component sets would never arrive. By letting only shape and
+       opacity inherit and mixing here, both the proximity (through inheritance) and
+       the colour (from the component) come out right. */
+    .picky-pressable {
+        /* A reserved slot ahead of the shadow for a ring shown while pressed. A
+           component fills it through --picky-ring; by default it is invisible.
+           Without that slot a ring would replace the entire box-shadow and so remove
+           the press shadow -- exactly what the utility `ring-4` used to do, which is
+           why the `hard` shadow never appeared while pressing. */
+        --picky-ring: 0 0 0 0 transparent;
+
+        box-shadow:
+            var(--picky-ring),
+            var(--picky-shadow-offset)
+                color-mix(
+                    in oklab,
+                    var(--picky-shadow-color) var(--picky-shadow-alpha),
+                    transparent
+                );
+        transition: transform 100ms;
+    }
+
+    .picky-pressable:active {
+        box-shadow:
+            var(--picky-ring),
+            var(--picky-press-offset)
+                color-mix(
+                    in oklab,
+                    var(--picky-shadow-color) var(--picky-press-alpha),
+                    transparent
+                );
+        transform: var(--picky-press-transform);
+    }
+
+    [aria-disabled='true'] .picky-pressable,
+    [aria-disabled='true'] .picky-pressable:active {
+        box-shadow: none;
+        transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .picky-pressable,
+        .picky-pressable:active {
+            transition: none;
+            transform: none;
+        }
     }
 }

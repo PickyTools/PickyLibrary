@@ -1,0 +1,138 @@
+/* BaseAlert -- a persistent message in the page.
+ *
+ * Same shape as button.css: `data-type` sets three tokens, the rules read them.
+ */
+
+@layer picky-components {
+    .picky-alert {
+        border: 1px solid var(--picky-alert-line);
+        border-radius: var(--picky-radius-container);
+        padding: 1rem;
+        background-color: var(--picky-alert-bg);
+        color: var(--picky-alert-text);
+    }
+
+    .picky-alert__body {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .picky-alert__icon {
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+    }
+
+    .picky-alert__content {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .picky-alert__title {
+        font-size: var(--picky-text-sm);
+        line-height: 1.25;
+        font-weight: 600;
+    }
+
+    .picky-alert__description {
+        margin-top: 0.25rem;
+        font-size: var(--picky-text-sm);
+        line-height: 1.375;
+        opacity: 0.75;
+    }
+
+    .picky-alert__extra {
+        margin-top: 0.75rem;
+    }
+
+    .picky-alert__close {
+        height: 1.5rem;
+        width: 1.5rem;
+        opacity: 0.6;
+    }
+
+    .picky-alert__close:hover {
+        opacity: 1;
+    }
+
+    /* ── Types ──────────────────────────────────────────────────────────────
+     * In dark mode the panel becomes a translucent tint of the deepest shade, so
+     * the app's own background shows through.
+     */
+
+    .picky-alert[data-type='info'] {
+        --picky-alert-bg: var(--picky-color-blue-50);
+        --picky-alert-line: var(--picky-color-blue-200);
+        --picky-alert-text: var(--picky-color-blue-800);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-alert-bg: color-mix(in oklab, var(--picky-color-blue-950) 40%, transparent);
+                --picky-alert-line: var(--picky-color-blue-800);
+                --picky-alert-text: var(--picky-color-blue-200);
+            }
+        }
+        .dark & {
+            --picky-alert-bg: color-mix(in oklab, var(--picky-color-blue-950) 40%, transparent);
+            --picky-alert-line: var(--picky-color-blue-800);
+            --picky-alert-text: var(--picky-color-blue-200);
+        }
+    }
+
+    .picky-alert[data-type='warning'] {
+        --picky-alert-bg: var(--picky-color-yellow-50);
+        --picky-alert-line: var(--picky-color-yellow-200);
+        --picky-alert-text: var(--picky-color-yellow-800);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-alert-bg: color-mix(in oklab, var(--picky-color-yellow-950) 40%, transparent);
+                --picky-alert-line: var(--picky-color-yellow-800);
+                --picky-alert-text: var(--picky-color-yellow-200);
+            }
+        }
+        .dark & {
+            --picky-alert-bg: color-mix(in oklab, var(--picky-color-yellow-950) 40%, transparent);
+            --picky-alert-line: var(--picky-color-yellow-800);
+            --picky-alert-text: var(--picky-color-yellow-200);
+        }
+    }
+
+    .picky-alert[data-type='error'] {
+        --picky-alert-bg: var(--picky-color-red-50);
+        --picky-alert-line: var(--picky-color-red-200);
+        --picky-alert-text: var(--picky-color-red-800);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-alert-bg: color-mix(in oklab, var(--picky-color-red-950) 40%, transparent);
+                --picky-alert-line: var(--picky-color-red-800);
+                --picky-alert-text: var(--picky-color-red-200);
+            }
+        }
+        .dark & {
+            --picky-alert-bg: color-mix(in oklab, var(--picky-color-red-950) 40%, transparent);
+            --picky-alert-line: var(--picky-color-red-800);
+            --picky-alert-text: var(--picky-color-red-200);
+        }
+    }
+
+    .picky-alert[data-type='success'] {
+        --picky-alert-bg: var(--picky-color-green-50);
+        --picky-alert-line: var(--picky-color-green-200);
+        --picky-alert-text: var(--picky-color-green-800);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-alert-bg: color-mix(in oklab, var(--picky-color-green-950) 40%, transparent);
+                --picky-alert-line: var(--picky-color-green-800);
+                --picky-alert-text: var(--picky-color-green-200);
+            }
+        }
+        .dark & {
+            --picky-alert-bg: color-mix(in oklab, var(--picky-color-green-950) 40%, transparent);
+            --picky-alert-line: var(--picky-color-green-800);
+            --picky-alert-text: var(--picky-color-green-200);
+        }
+    }
+}

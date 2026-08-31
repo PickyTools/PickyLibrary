@@ -10,5 +10,12 @@ export default defineConfig({
     test: {
         environment: 'happy-dom',
         include: ['src/**/*.test.ts'],
+        coverage: {
+            provider: 'v8',
+            include: ['src/**/*.ts', 'src/**/*.vue'],
+            // Type-only files and the entry point hold no branches to cover.
+            exclude: ['src/**/*.test.ts', 'src/index.ts', 'src/env.d.ts', 'src/types.ts'],
+            reporter: ['text', 'html'],
+        },
     },
 });

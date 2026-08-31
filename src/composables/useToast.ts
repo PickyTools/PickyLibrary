@@ -1,79 +1,75 @@
-import { readonly, ref } from 'vue';
+import {
+    getCurrentInstance,
+    getCurrentScope,
+    inject,
+    onScopeDispose,
+    provide,
+    readonly,
+    shallowRef,
+    type InjectionKey,
+} from 'vue';
+import { createToastStore, type Toast, type ToastStore } from '../core/toast';
 
-export type ToastStyle = 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'gray';
+export type { Toast, ToastOptions, ToastStore } from '../core/toast';
 
-export interface ToastOptions {
-    title: string;
-    description?: string;
-    style?: ToastStyle;
-    /** Icooncode, doorgegeven aan jouw resolver. Zonder waarde geen icoon. */
-    icon?: string;
-    /** Auto-sluiten in ms. `0` laat de toast staan tot hij handmatig weg gaat. */
-    duration?: number;
-    /**
-     * Onderbreekt de schermlezer meteen in plaats van te wachten op een pauze.
-     * Standaard alleen aan voor `danger`. Gebruik dit spaarzaam: een `assertive`
-     * melding kapt af waar de gebruiker mee bezig was.
-     */
-    assertive?: boolean;
+export const ToastStoreKey: InjectionKey<ToastStore> = Symbol('picky-toast-store');
+
+/**
+ * Gives this app its own toast store. Call it in the setup of your root component,
+ * or use `app.provide(ToastStoreKey, createToastStore())`.
+ *
+ * **Required for server-side rendering.** Without it, `useToast()` falls back to a
+ * store outside the component tree, and on a server that store is shared by every
+ * request in flight.
+ */
+export function provideToasts(store: ToastStore = createToastStore()): ToastStore {
+    provide(ToastStoreKey, store);
+    return store;
 }
 
-export interface Toast extends Required<Pick<ToastOptions, 'title' | 'style' | 'duration'>> {
-    id: number;
-    description: string;
-    icon?: string;
-    assertive: boolean;
-}
+let browserFallback: ToastStore | null = null;
 
-const toasts = ref<Toast[]>([]);
-const timers = new Map<number, ReturnType<typeof setTimeout>>();
-let nextId = 0;
-
-function removeToast(id: number): void {
-    const timer = timers.get(id);
-    if (timer) {
-        clearTimeout(timer);
-        timers.delete(id);
-    }
-    toasts.value = toasts.value.filter((toast) => toast.id !== id);
-}
-
-function addToast(options: ToastOptions): number {
-    const id = ++nextId;
-    const style = options.style ?? 'info';
-
-    const toast: Toast = {
-        id,
-        title: options.title,
-        description: options.description ?? '',
-        style,
-        icon: options.icon,
-        duration: options.duration ?? 4000,
-        assertive: options.assertive ?? style === 'danger',
-    };
-
-    toasts.value = [...toasts.value, toast];
-
-    if (toast.duration > 0) {
-        timers.set(
-            id,
-            setTimeout(() => removeToast(id), toast.duration)
-        );
+function fallbackStore(): ToastStore {
+    // Never a singleton on the server: module scope outlives a single request
+    // there, so a shared store leaks one visitor's toast to the next. A fresh empty
+    // store is the safe answer -- on the server a toast is not visible before the
+    // page hydrates anyway.
+    if (typeof window === 'undefined') {
+        if (import.meta.env.DEV) {
+            console.warn(
+                '[PickyLibrary] useToast() was called during server rendering without a ' +
+                    'provided store. Call provideToasts() in your root component so each ' +
+                    'request gets its own.'
+            );
+        }
+        return createToastStore();
     }
 
-    return id;
-}
-
-function clearToasts(): void {
-    timers.forEach((timer) => clearTimeout(timer));
-    timers.clear();
-    toasts.value = [];
+    browserFallback ??= createToastStore();
+    return browserFallback;
 }
 
 /**
- * Gedeelde toaststate. Bewust module-scope, zodat je vanuit elke plek in je app
- * een toast kunt tonen zonder hem door te geven. Eén ToastContainer volstaat.
+ * Access to the toast state. Uses the store put in place by `provideToasts()`, and
+ * in the browser falls back to a single shared store so you can raise a toast from
+ * anywhere without passing it around.
  */
 export function useToast() {
-    return { toasts: readonly(toasts), addToast, removeToast, clearToasts };
+    // inject() warns outside a setup function, and useToast() is allowed to be
+    // called at module scope.
+    const store = (getCurrentInstance() ? inject(ToastStoreKey, null) : null) ?? fallbackStore();
+
+    const toasts = shallowRef<readonly Toast[]>(store.getToasts());
+    const unsubscribe = store.subscribe(() => {
+        toasts.value = store.getToasts();
+    });
+
+    if (getCurrentScope()) onScopeDispose(unsubscribe);
+
+    return {
+        toasts: readonly(toasts),
+        addToast: store.add,
+        removeToast: store.remove,
+        clearToasts: store.clear,
+    };
 }

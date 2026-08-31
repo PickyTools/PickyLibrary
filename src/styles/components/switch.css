@@ -1,0 +1,123 @@
+/* BaseSwitch -- a real <button role="switch">.
+ *
+ * The state lives in aria-checked, which doubles as the styling hook: there is no
+ * second, JavaScript-side truth about whether the switch is on.
+ */
+
+@layer picky-components {
+    .picky-switch {
+        position: relative;
+        display: flex;
+        height: fit-content;
+        width: fit-content;
+        align-items: center;
+        cursor: pointer;
+        border-radius: var(--picky-radius-switch-track);
+    }
+
+    .picky-switch:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .picky-switch:focus-visible {
+        outline: var(--picky-focus-ring-width) solid var(--picky-color-focus-ring);
+        outline-offset: var(--picky-focus-ring-offset);
+    }
+
+    .picky-switch__track {
+        position: relative;
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        border-radius: var(--picky-radius-switch-track);
+        background-color: var(--picky-switch-track);
+    }
+
+    .picky-switch__knob {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1;
+        border-radius: var(--picky-radius-switch-knob);
+        background-color: var(--picky-color-white);
+        transform: translateX(0);
+    }
+
+    .picky-switch[aria-checked='true'] .picky-switch__knob {
+        transform: translateX(var(--picky-switch-travel));
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        .picky-switch .picky-switch__track {
+            transition: background-color 150ms ease-in-out;
+        }
+        .picky-switch .picky-switch__knob {
+            transition: transform 150ms ease-in-out;
+        }
+    }
+
+    .picky-switch__icon {
+        color: var(--picky-color-neutral-700);
+    }
+
+    /* ── Sizes ──────────────────────────────────────────────────────────────
+     * The knob is inset equally on every side, so its travel is simply the track's
+     * width minus its height.
+     */
+
+    .picky-switch[data-size='xs'],
+    .picky-switch[data-size='sm'] {
+        --picky-switch-inset: 0.25rem;
+        --picky-switch-travel: 1rem;
+    }
+    .picky-switch[data-size='xs'] .picky-switch__track,
+    .picky-switch[data-size='sm'] .picky-switch__track {
+        height: 1.5rem;
+        width: 2.5rem;
+    }
+
+    .picky-switch[data-size='md'] {
+        --picky-switch-inset: 0.375rem;
+        --picky-switch-travel: 1.5rem;
+    }
+    .picky-switch[data-size='md'] .picky-switch__track {
+        height: 2rem;
+        width: 3.5rem;
+    }
+
+    .picky-switch[data-size='lg'] {
+        --picky-switch-inset: 0.375rem;
+        --picky-switch-travel: 2rem;
+    }
+    .picky-switch[data-size='lg'] .picky-switch__track {
+        height: 2.5rem;
+        width: 4.5rem;
+    }
+
+    .picky-switch__knob {
+        left: var(--picky-switch-inset);
+        inset-block: var(--picky-switch-inset);
+    }
+
+    /* ── Colours ───────────────────────────────────────────────────────────── */
+
+    .picky-switch {
+        --picky-switch-track: var(--picky-color-neutral-500);
+        --picky-shadow-color: var(--picky-color-neutral-500);
+    }
+
+    .picky-switch:hover:not(:disabled) {
+        --picky-switch-track: var(--picky-color-neutral-600);
+    }
+
+    .picky-switch[aria-checked='true'] {
+        --picky-switch-track: var(--picky-color-primary-500);
+        --picky-shadow-color: var(--picky-color-primary-500);
+    }
+
+    .picky-switch[aria-checked='true']:hover:not(:disabled) {
+        --picky-switch-track: var(--picky-color-primary-400);
+    }
+}

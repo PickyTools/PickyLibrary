@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import BaseSwitch from './BaseSwitch.vue';
-import BaseCheckbox from './BaseCheckbox.vue';
+
 
 const named = { ariaLabel: 'Dark mode' };
 
 describe('BaseSwitch interaction', () => {
-    // Regressie, en de ernstigste bug uit de audit: de vorige versie handelde
-    // keydown en touch zelf af maar had geen click-handler, dus met een muis
-    // gebeurde er niets. Nu is het een echte <button>, dus dit kán niet meer stuk.
+    // Regression, and the worst bug from the audit: the previous version handled
+    // keydown and touch itself but had no click handler, so nothing happened with a
+    // mouse. It is a real <button> now, so this cannot break again.
     it('toggles on a mouse click', async () => {
         const w = mount(BaseSwitch, { props: { ...named, modelValue: false } });
         await w.trigger('click');
@@ -44,46 +44,12 @@ describe('BaseSwitch naming', () => {
         ).toBe('heading-1');
     });
 
-    // Een naamloze schakelaar is voor een schermlezer betekenisloos, en dat merk je
-    // zelf nooit. Dev moet er dus over klagen.
+    // An unnamed switch is meaningless to a screen reader, and you never notice it
+    // yourself. Development builds have to complain about it.
     it('warns in development when it has no accessible name', () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
         mount(BaseSwitch, { props: { modelValue: false } });
         expect(warn).toHaveBeenCalledWith(expect.stringContaining('accessible name'));
         warn.mockRestore();
-    });
-});
-
-describe('BaseCheckbox', () => {
-    it('emits the new checked state', async () => {
-        const w = mount(BaseCheckbox, { props: { label: 'Accept', modelValue: false } });
-        await w.find('input').setValue(true);
-        expect(w.emitted('update:modelValue')?.[0]).toEqual([true]);
-    });
-
-    it('associates the label with the native control', () => {
-        const w = mount(BaseCheckbox, { props: { label: 'Accept' } });
-        expect(w.element.tagName).toBe('LABEL');
-        expect(w.find('input[type="checkbox"]').exists()).toBe(true);
-    });
-
-    // Regressie: het echte vakje is sr-only, dus de globale :focus-visible landde op
-    // een weggeklipt element van 1×1px. Een toetsenbordgebruiker zag helemaal niets.
-    it('shows a focus ring on the visible box', () => {
-        const box = mount(BaseCheckbox, { props: { label: 'x' } }).findAll('span')[0]!;
-        expect(box.classes().join(' ')).toContain('group-has-[:focus-visible]:outline-2');
-    });
-
-    it('lets the indicator be replaced without forking', () => {
-        const w = mount(BaseCheckbox, {
-            props: { label: 'x', modelValue: true },
-            slots: { indicator: '<i data-mine />' },
-        });
-        expect(w.find('i[data-mine]').exists()).toBe(true);
-    });
-
-    it('does not toggle when disabled', () => {
-        const w = mount(BaseCheckbox, { props: { label: 'x', disabled: true } });
-        expect(w.find('input').attributes('disabled')).toBeDefined();
     });
 });

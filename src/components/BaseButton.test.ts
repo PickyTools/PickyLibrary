@@ -33,8 +33,8 @@ describe('BaseButton disabled handling', () => {
         expect(w.emitted('click')).toBeUndefined();
     });
 
-    // Regressie: eerder rendeerde een disabled link nog steeds <a href> en navigeerde
-    // gewoon, terwijl aria-disabled tegen schermlezers "niet beschikbaar" zei.
+    // Regression: a disabled link used to still render <a href> and navigate as
+    // normal, while aria-disabled told screen readers it was unavailable.
     it('strips href from a disabled link so it cannot navigate', () => {
         const w = mount(BaseButton, { props: { label: 'x', href: '/somewhere', disabled: true } });
         expect(w.attributes('href')).toBeUndefined();
@@ -49,18 +49,18 @@ describe('BaseButton disabled handling', () => {
         expect(w.attributes('tabindex')).toBeUndefined();
     });
 
-    // Regressie: de oude klassen `!active:ring-0` / `!focus:ring-0` genereerden geen
-    // CSS in Tailwind v4, dus disabled onderdrukte de ring nooit.
-    it('applies working important utilities when disabled', () => {
-        const inner = mount(BaseButton, { props: { label: 'x', disabled: true } }).find('span');
-        expect(inner.classes()).toContain('picky:cursor-not-allowed!');
-        expect(inner.classes()).toContain('picky:opacity-50');
+    // The disabled styling comes from button.css, which selects on :disabled and on
+    // [aria-disabled]. Both have to be present, because an <a> has no :disabled.
+    it('marks the disabled state on the root for the stylesheet', () => {
+        const w = mount(BaseButton, { props: { label: 'x', disabled: true } });
+        expect(w.attributes('disabled')).toBeDefined();
+        expect(w.attributes('aria-disabled')).toBe('true');
     });
 });
 
 describe('BaseButton focus behaviour', () => {
-    // Regressie: de knop riep blur() aan na elke klik, waardoor toetsenbordgebruikers
-    // hun plek in de tabvolgorde verloren (WCAG 2.4.3).
+    // Regression: the button called blur() after every click, so keyboard users lost
+    // their place in the tab order (WCAG 2.4.3).
     it('keeps focus after activation', async () => {
         const w = mount(BaseButton, { props: { label: 'x' }, attachTo: document.body });
         const el = w.element as HTMLButtonElement;
@@ -89,22 +89,23 @@ describe('BaseButton accessible name', () => {
 });
 
 describe('BaseButton shadow styling', () => {
-    // De vorm van de schaduw komt uit CSS (data-picky-shadow); het component levert
-    // alleen de kleur. Zo is thematiseren mogelijk zonder een regel JavaScript.
-    it('contributes only a shadow colour token', () => {
+    // The shadow's shape and colour both come from CSS: the shape from
+    // data-picky-shadow, the colour from data-color. The component only provides the
+    // hook .picky-pressable attaches to, and not a single computed class.
+    it('opts the inner element into the shared pressable styling', () => {
         const inner = mount(BaseButton, { props: { label: 'x' } }).find('span');
+        expect(inner.classes()).toContain('picky-button__inner');
         expect(inner.classes()).toContain('picky-pressable');
-        expect(inner.classes().join(' ')).toContain('--picky-shadow-color:var(--picky-color-primary-500)');
     });
 
-    it('mirrors the colour prop in the shadow token', () => {
-        const inner = mount(BaseButton, { props: { label: 'x', color: 'danger' } }).find('span');
-        expect(inner.classes().join(' ')).toContain('--picky-shadow-color:var(--picky-color-red-500)');
+    it('exposes the colour so the stylesheet can pick the shadow colour', () => {
+        const w = mount(BaseButton, { props: { label: 'x', color: 'danger' } });
+        expect(w.attributes('data-color')).toBe('danger');
     });
 
-    it('suppresses the shadow entirely for the text variant', () => {
-        const inner = mount(BaseButton, { props: { label: 'x', variant: 'text' } }).find('span');
-        expect(inner.classes().join(' ')).toContain('--picky-shadow:none');
+    it('exposes the variant so the text variant can drop its shadow', () => {
+        const w = mount(BaseButton, { props: { label: 'x', variant: 'text' } });
+        expect(w.attributes('data-variant')).toBe('text');
     });
 
     it('scopes an explicit shadow prop to the element itself', () => {
@@ -122,7 +123,21 @@ describe('BaseButton custom colour', () => {
     it('picks black text on a light custom colour and white on a dark one', () => {
         const light = mount(BaseButton, { props: { label: 'x', color: 'custom', customColor: '#ffff00' } });
         const dark = mount(BaseButton, { props: { label: 'x', color: 'custom', customColor: '#101010' } });
-        expect(light.find('span').attributes('style')).toContain('color: #000000');
-        expect(dark.find('span').attributes('style')).toContain('color: #ffffff');
+        expect(light.attributes('style')).toContain('--picky-btn-on-fill: #000000');
+        expect(dark.attributes('style')).toContain('--picky-btn-on-fill: #ffffff');
+    });
+
+    // A custom colour sets exactly the tokens button.css sets for the fixed colours,
+    // which is why `custom` needs no CSS rules of its own.
+    it('fills the same tokens the stylesheet uses for fixed colours', () => {
+        const w = mount(BaseButton, { props: { label: 'x', color: 'custom', customColor: '#ff0000' } });
+        const style = w.attributes('style') ?? '';
+        expect(style).toContain('--picky-btn-fill: #ff0000');
+        expect(style).toContain('--picky-shadow-color: #ff0000');
+    });
+
+    it('leaves the tokens to the stylesheet for the fixed colours', () => {
+        const w = mount(BaseButton, { props: { label: 'x', color: 'primary' } });
+        expect(w.attributes('style')).toBeUndefined();
     });
 });

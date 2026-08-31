@@ -24,8 +24,8 @@ describe('BasePasswordInput', () => {
         expect(w.find('button').attributes('aria-pressed')).toBe('true');
     });
 
-    // Regressie: de knop had tabindex="-1" en was dus onbereikbaar per toetsenbord,
-    // terwijl tonen/verbergen juist voor toetsenbordgebruikers waardevol is.
+    // Regression: the button had tabindex="-1" and so was unreachable by keyboard,
+    // even though show/hide is most valuable to keyboard users.
     it('keeps the toggle reachable by keyboard', () => {
         expect(mountPw().find('button').attributes('tabindex')).toBeUndefined();
     });
@@ -37,12 +37,10 @@ describe('BasePasswordInput', () => {
         expect(w.find('button').attributes('aria-label')).toBe('Verberg wachtwoord');
     });
 
-    // Regressie: `size` was een gedeclareerde prop en viel daarmee buiten $attrs,
-    // maar werd niet doorgegeven — <BasePasswordInput size="lg"> rendeerde md.
+    // Regression: `size` was a declared prop and so fell outside $attrs, but was
+    // never passed on -- <BasePasswordInput size="lg"> rendered md.
     it('forwards size to the underlying input', () => {
-        const lg = mountPw({ size: 'lg' }).findAll('label').at(-1)!;
-        const md = mountPw({ size: 'md' }).findAll('label').at(-1)!;
-        expect(lg.classes()).toContain('picky:h-14');
-        expect(md.classes()).toContain('picky:h-10');
+        expect(mountPw({ size: 'lg' }).attributes('data-size')).toBe('lg');
+        expect(mountPw({ size: 'md' }).attributes('data-size')).toBe('md');
     });
 });

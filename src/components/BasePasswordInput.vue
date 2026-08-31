@@ -13,16 +13,15 @@
 
         <template #suffix>
             <slot name="suffix" />
-            <!-- Geen tabindex="-1": tonen/verbergen is een kernvoorziening voor wie
-                 dyslexie of een motorische beperking heeft, en voor iedereen op een
-                 telefoontoetsenbord. @mousedown.prevent houdt de focus in het veld
-                 bij een muisklik, wat de reden was dat de knop eerder uit de
-                 tabvolgorde was gehaald. -->
+            <!-- No tabindex="-1": show/hide is a core affordance for people with
+                 dyslexia or a motor impairment, and for anyone on a phone keyboard.
+                 @mousedown.prevent keeps focus in the field on a mouse click, which
+                 was the reason the button had been pulled out of the tab order. -->
             <button
                 type="button"
                 :aria-label="visible ? hideLabel : showLabel"
                 :aria-pressed="visible"
-                class="picky-reset picky:flex picky:shrink-0 picky:cursor-pointer picky:items-center picky:justify-center picky:rounded picky:p-0.5 picky:text-text-caption picky:transition-colors picky:hover:text-text-muted picky:focus-visible:outline-2 picky:focus-visible:outline-offset-2 picky:focus-visible:outline-[var(--picky-color-focus-ring)]"
+                class="picky-reset picky-password-toggle"
                 @click="visible = !visible"
                 @mousedown.prevent
             >
@@ -41,18 +40,18 @@ import type { Size } from '../types';
 defineOptions({ name: 'BasePasswordInput', inheritAttrs: false });
 
 defineSlots<{
-    prefix(): unknown;
-    suffix(): unknown;
+    prefix?(): unknown;
+    suffix?(): unknown;
 }>();
 
 withDefaults(
     defineProps<{
         modelValue?: string | number;
         size?: Size;
-        /** Namen voor de toggle. Engelse defaults; vervang ze voor je eigen taal. */
+        /** Names for the toggle. English by default; replace them for your own language. */
         showLabel?: string;
         hideLabel?: string;
-        /** Icooncodes, doorgegeven aan jouw resolver. */
+        /** Icon codes, handed to your resolver. */
         showIcon?: string;
         hideIcon?: string;
     }>(),
