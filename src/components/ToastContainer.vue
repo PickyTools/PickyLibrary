@@ -8,7 +8,7 @@
         <div
             class="picky-toast-region"
             :data-inline="disabled ? 'true' : undefined"
-            aria-live="polite"
+            role="status"
             :aria-label="politeLabel"
         >
             <TransitionGroup name="picky-toast">

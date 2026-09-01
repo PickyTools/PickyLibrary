@@ -7,6 +7,11 @@ breaking changes.
 
 ### Fixed
 
+- The polite toast region was a bare `<div>` carrying `aria-live="polite"` and an
+  `aria-label`. ARIA forbids a name on an element with no role, so the label was
+  invalid and axe flagged every page that mounted a container. It is now
+  `role="status"`, which implies the polite live region and is allowed to be named.
+
 - A switch's off-track was the one neutral with no dark-mode counterpart: it stayed
   on the light ramp in dark mode. It now follows `dark-surface` like the checkbox,
   input, modal and select neutrals do. At the default palette the two shades are

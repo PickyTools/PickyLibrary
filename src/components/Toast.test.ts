@@ -52,7 +52,9 @@ describe('ToastContainer live regions', () => {
         addToast({ title: 'Urgent', style: 'danger' });
 
         const w = mount(ToastContainer, { props: { disabled: true }, global: { provide } });
-        const polite = w.find('[aria-live="polite"]');
+        // role="status" carries aria-live="polite" implicitly, and unlike a bare div it
+        // is allowed to have an accessible name -- a labelled div fails ARIA outright.
+        const polite = w.find('[role="status"]');
         const assertive = w.find('[aria-live="assertive"]');
 
         expect(polite.text()).toContain('Polite');
@@ -63,8 +65,8 @@ describe('ToastContainer live regions', () => {
     it('puts no live region on the individual toasts', () => {
         addToast({ title: 'Polite' });
         const w = mount(ToastContainer, { props: { disabled: true }, global: { provide } });
-        const inner = w.findAll('[aria-live]');
-        expect(inner).toHaveLength(2); // only the two regions
+        const regions = w.findAll('[aria-live], [role="status"], [role="alert"]');
+        expect(regions).toHaveLength(2); // only the two regions
     });
 
     it('can render in place instead of teleporting', () => {
