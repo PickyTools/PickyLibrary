@@ -80,10 +80,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jochumjurre/PickyLibrary.git"
+    "url": "git+https://github.com/PickyTools/PickyLibrary.git"
   },
-  "homepage": "https://github.com/jochumjurre/PickyLibrary#readme",
+  "homepage": "https://github.com/PickyTools/PickyLibrary#readme",
   "bugs": {
-    "url": "https://github.com/jochumjurre/PickyLibrary/issues"
+    "url": "https://github.com/PickyTools/PickyLibrary/issues"
   }
 }
