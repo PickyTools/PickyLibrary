@@ -1,6 +1,6 @@
 {
   "name": "pickylibrary",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Accessible, themeable Vue 3 base components. Bring your own icons, style it with CSS variables.",
   "license": "MIT",
   "author": "Jochum <jochumjurre@protonmail.com>",

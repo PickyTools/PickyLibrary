@@ -96,9 +96,10 @@
 
     .picky-modal__title {
         color: var(--picky-color-text-heading);
+        font-family: var(--picky-font-heading);
         font-size: var(--picky-text-lg);
         line-height: var(--picky-text-lg--line-height);
-        font-weight: 600;
+        font-weight: var(--picky-font-weight-heading);
     }
 
     .picky-modal__close {

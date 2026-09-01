@@ -3,6 +3,22 @@
 The public API is still moving. In `0.x` a minor bump is the one that carries
 breaking changes.
 
+## 0.2.1
+
+### Fixed
+
+- A switch's off-track was the one neutral with no dark-mode counterpart: it stayed
+  on the light ramp in dark mode. It now follows `dark-surface` like the checkbox,
+  input, modal and select neutrals do. At the default palette the two shades are
+  within half a percent of each other, so nothing shifts for a consumer who has not
+  themed the ramp -- but one who points `--picky-color-neutral-*` at their own
+  colours no longer gets an off-track that can collide with the on-track.
+- `--picky-font-heading` and `--picky-font-weight-heading` were declared but read
+  by nothing, so setting them did nothing at all. The three titles the library
+  renders -- toast, modal and alert -- now use them. The defaults are `inherit` and
+  `600`, which is what those rules hard-coded before, so nothing changes until the
+  tokens are set.
+
 ## 0.2.0
 
 A large release. Everything visual changed, because the components stopped

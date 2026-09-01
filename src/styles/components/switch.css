@@ -103,13 +103,37 @@
 
     /* ── Colours ───────────────────────────────────────────────────────────── */
 
+    /* The off-track is the one neutral in the library that had no dark-mode
+       counterpart: it stayed on the light ramp, which reads as a pale bar on a dark
+       page and, for a consumer whose neutral ramp follows their theme, could land on
+       the same colour as the on-track. Same shape as the checkbox and input rules. */
     .picky-switch {
         --picky-switch-track: var(--picky-color-neutral-500);
         --picky-shadow-color: var(--picky-color-neutral-500);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-switch-track: var(--picky-color-dark-surface-500);
+            }
+        }
+        .dark & {
+            --picky-switch-track: var(--picky-color-dark-surface-500);
+        }
     }
 
+    /* Light goes one step darker on hover; dark goes one step lighter, so the
+       feedback is a step towards the cursor either way. */
     .picky-switch:hover:not(:disabled) {
         --picky-switch-track: var(--picky-color-neutral-600);
+
+        @media (prefers-color-scheme: dark) {
+            :root:not(.light) & {
+                --picky-switch-track: var(--picky-color-dark-surface-400);
+            }
+        }
+        .dark & {
+            --picky-switch-track: var(--picky-color-dark-surface-400);
+        }
     }
 
     .picky-switch[aria-checked='true'] {

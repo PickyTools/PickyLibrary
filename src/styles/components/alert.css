@@ -29,9 +29,10 @@
     }
 
     .picky-alert__title {
+        font-family: var(--picky-font-heading);
         font-size: var(--picky-text-sm);
         line-height: 1.25;
-        font-weight: 600;
+        font-weight: var(--picky-font-weight-heading);
     }
 
     .picky-alert__description {

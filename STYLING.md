@@ -58,6 +58,22 @@ applyReadableTextColors();
 Skip both and a development build warns, naming the pair and the ratio it
 measured. White on that orange is 2.80:1; black is 7.49:1.
 
+#### Typography
+
+Two tokens cover the titles the library renders itself -- a toast's, a modal's and
+an alert's:
+
+```css
+:root {
+    --picky-font-heading: 'Poppins', system-ui;
+    --picky-font-weight-heading: 700;
+}
+```
+
+They default to `inherit` and `600`, so without them a title simply follows the
+page. Loading the font file is yours to do; the tokens only say which family to
+ask for.
+
 ### 2. Class names — for everything else
 
 When no token covers what you need, target the component directly. No
