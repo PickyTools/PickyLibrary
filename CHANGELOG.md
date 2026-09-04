@@ -3,6 +3,51 @@
 The public API is still moving. In `0.x` a minor bump is the one that carries
 breaking changes.
 
+## 0.3.0
+
+### Added
+
+- **Border weight.** `data-picky-border` on `<html>`, on an ancestor, or on a
+  component picks one of three weights, the same way `data-picky-shadow` picks a
+  shadow style. It sets `--picky-border-control` (input, outline button, and the
+  transparent edge that keeps a filled button the same size) and
+  `--picky-border-container` (alert, select panel). Without the attribute:
+  `hairline`, which is what every component drew before, so nothing moves for a
+  consumer who does not set it. See [STYLING.md](STYLING.md).
+
+  `none` takes away a container's edge but never a control's: a field is
+  transparent by default, so its border is the only thing marking where it is, and
+  WCAG 1.4.11 asks 3:1 of exactly that edge. `--picky-border-control` therefore
+  floors at `1px` in all three weights.
+
+- **A visible edge on filled buttons**, `--picky-btn-edge`. The `full` variant already
+  carried a transparent border to keep it the same size as an outline button; that
+  border now has a colour -- the accent a few steps along its own ramp, darker in
+  light mode and lighter in dark. Set the token to change it, or to `transparent` for
+  the old look.
+
+  This is an accessibility fix as much as a visual one. A mid-tone fill clears 3:1
+  against the page but not against every surface a button sits on: on a raised
+  surface in dark mode it lands at 2.70:1 and on a sunken one at 1.98:1, under what
+  WCAG 1.4.11 asks of the boundary of a component. The edge is 6.62:1 and 4.86:1
+  there, and 1.4.11 lets the boundary carry that contrast instead of the fill. The
+  step is past the hover fill on purpose, so the edge does not vanish into the button
+  exactly while you are pressing it.
+
+  At `data-picky-border="none"` the edge goes transparent -- "no borders" means no
+  borders, and unlike a field a filled button does not disappear without one. Its
+  width stays, so nothing shifts. Only the opacity inherits and the mix happens on
+  the button, the same arrangement the shadow style uses, so a nested subtree can
+  still differ.
+
+### Fixed
+
+- An input's resting border was `neutral-400`, which is 2.55:1 on white and 2.66:1
+  on a tinted panel -- under the 3:1 WCAG 1.4.11 asks of the boundary of a control,
+  and the field has no fill of its own to fall back on. It is now `neutral-500`
+  (4.13:1). Focus moved from `-500` to `-600` so focus still changes the border.
+  Dark mode already cleared the bar at 3.68:1 and is unchanged.
+
 ## 0.2.1
 
 ### Fixed

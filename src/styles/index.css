@@ -290,6 +290,43 @@
         --picky-press-alpha: 0%;
         --picky-press-transform: scale(0.96);
     }
+
+    /* ── Border weight ──────────────────────────────────────────────────────
+     * Put `data-picky-border` on <html>, on any ancestor, or on the component
+     * itself. Without the attribute: hairline. Custom properties rather than
+     * descendant selectors, for the same reason as the shadow style above --
+     * they inherit from the nearest ancestor that sets them, so nesting works.
+     *
+     * Two classes, and the difference between them is not cosmetic.
+     *
+     * `--picky-border-control` is the boundary of something you operate: an input,
+     * an outline button. It never goes to zero. A field carries no fill of its own,
+     * so with the border gone it would have nothing left to mark its edge, and WCAG
+     * 1.4.11 asks 3:1 of exactly that edge. `none` is a style, not a licence to
+     * remove the only thing that says where the control is.
+     *
+     * `--picky-border-container` is the edge of a surface -- an alert, a card.
+     * Nothing is operated there and no minimum applies, so `none` does take it away.
+     * That is the flat look, and it is the whole of what `none` means.
+     */
+    :root,
+    [data-picky-border='hairline'] {
+        --picky-border-control: 1px;
+        --picky-border-container: 1px;
+        --picky-border-edge-alpha: 100%;
+    }
+
+    [data-picky-border='none'] {
+        --picky-border-control: 1px;
+        --picky-border-container: 0px;
+        --picky-border-edge-alpha: 0%;
+    }
+
+    [data-picky-border='bold'] {
+        --picky-border-control: 2px;
+        --picky-border-container: 2px;
+        --picky-border-edge-alpha: 100%;
+    }
 }
 
 @layer picky-base {

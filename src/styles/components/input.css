@@ -36,7 +36,7 @@
     .picky-input__control {
         display: flex;
         align-items: center;
-        border: 1px solid var(--picky-input-line);
+        border: var(--picky-border-control) solid var(--picky-input-line);
         border-radius: var(--picky-radius-button);
         background-color: var(--picky-input-bg);
         color: var(--picky-input-text);
@@ -272,7 +272,11 @@
     .picky-input {
         --picky-input-bg: transparent;
         --picky-input-text: var(--picky-color-neutral-900);
-        --picky-input-line: var(--picky-color-neutral-400);
+        /* neutral-500, not -400. A field is transparent by default, so this line is
+           the only thing marking its edge; WCAG 1.4.11 asks 3:1 of it. -400 gives
+           2.55:1 on white and 2.66:1 on a tinted panel, -500 gives 4.13:1. Dark mode
+           already clears it at 3.68:1 on dark-surface-500 and is left alone. */
+        --picky-input-line: var(--picky-color-neutral-500);
         --picky-input-ring: color-mix(in oklab, var(--picky-color-focus-ring) 40%, transparent);
         --picky-shadow-color: var(--picky-color-neutral-500);
 
@@ -288,8 +292,10 @@
         }
     }
 
+    /* One step darker than at rest, so focus still changes the border. Moved from
+       -500 to -600 when the resting line was lifted. */
     .picky-input:not([data-state='error']) .picky-input__control:has(:focus-visible) {
-        --picky-input-line: var(--picky-color-neutral-500);
+        --picky-input-line: var(--picky-color-neutral-600);
     }
 
     @media (prefers-color-scheme: dark) {

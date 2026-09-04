@@ -74,6 +74,37 @@ They default to `inherit` and `600`, so without them a title simply follows the
 page. Loading the font file is yours to do; the tokens only say which family to
 ask for.
 
+#### Border weight
+
+`data-picky-border` on `<html>`, on any ancestor, or on a component itself picks
+one of three weights. Without the attribute: `hairline`.
+
+```html
+<html data-picky-border="bold">
+```
+
+| | `--picky-border-control` | `--picky-border-container` |
+|---|---|---|
+| `none` | `1px` | `0px` |
+| `hairline` (default) | `1px` | `1px` |
+| `bold` | `2px` | `2px` |
+
+Two classes, and the split is not cosmetic. `control` is the boundary of something
+you operate -- an input, an outline button -- and it never goes to zero: a field
+carries no fill of its own, so with the border gone nothing marks its edge, and
+WCAG 1.4.11 asks 3:1 of exactly that edge. `container` is the edge of a surface,
+where nothing is operated and no minimum applies, so `none` does take it away.
+
+Set either token yourself to override the scale for part of the tree.
+
+A filled button carries this border too, in `--picky-btn-edge`: its own accent a
+few steps along the ramp -- darker on a light page, lighter on a dark one. It is
+what satisfies WCAG 1.4.11 when the fill does not: a mid-tone fill on a raised
+surface in dark mode lands at 2.70:1, under the 3:1 the boundary of a component
+needs, where the edge is 6.62:1. The step is deliberately past the hover fill, so
+the edge stays visible while the button is hovered. At `none` it goes transparent --
+the width stays, so nothing shifts.
+
 ### 2. Class names — for everything else
 
 When no token covers what you need, target the component directly. No
@@ -126,8 +157,8 @@ a side effect of what happens to still be in the markup.
   with a `.picky-*` class in the stylesheet, so it can never collide with your own
   attributes.
 - `data-picky-<name>` — an input you set yourself, on any ancestor. Prefixed
-  because it is read outside of a library element. Currently only
-  `data-picky-shadow`.
+  because it is read outside of a library element. Currently `data-picky-shadow`
+  and `data-picky-border`.
 
 ## Writing a component stylesheet
 

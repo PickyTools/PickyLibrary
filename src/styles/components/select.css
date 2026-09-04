@@ -78,7 +78,7 @@
         box-shadow:
             0 10px 15px -3px rgb(0 0 0 / 0.1),
             0 4px 6px -4px rgb(0 0 0 / 0.1),
-            0 0 0 1px var(--picky-select-hairline);
+            0 0 0 var(--picky-border-container) var(--picky-select-hairline);
     }
 
     @media (prefers-color-scheme: dark) {

@@ -5,7 +5,7 @@
 
 @layer picky-components {
     .picky-alert {
-        border: 1px solid var(--picky-alert-line);
+        border: var(--picky-border-container) solid var(--picky-alert-line);
         border-radius: var(--picky-radius-container);
         padding: 1rem;
         background-color: var(--picky-alert-bg);
