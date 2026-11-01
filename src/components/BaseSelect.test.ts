@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { defineComponent, h, ref } from 'vue';
 import { mount } from '@vue/test-utils';
 import BaseSelect from './BaseSelect.vue';
+import BaseButton from './BaseButton.vue';
 import { IconResolverKey } from '../icons';
 
 const options = [
@@ -147,5 +149,50 @@ describe('BaseSelect customisation', () => {
         });
         await w.find('button').trigger('keydown', { key: 'ArrowDown' });
         expect(w.find('[data-mine]').exists()).toBe(true);
+    });
+});
+
+/*
+ * A trigger whose `$el` is not its button: it renders a fragment, so the renderer
+ * points the component vnode at the fragment's empty text anchor. That is the exact
+ * shape a desynced hydration leaves behind, and the shape BaseSelect used to choke
+ * on. `el` -- the template ref BaseButton now exposes -- still points at the button.
+ */
+const FragmentRootButton = defineComponent({
+    name: 'BaseButton',
+    inheritAttrs: false,
+    setup(_props, { slots, attrs, expose }) {
+        const el = ref<HTMLElement | null>(null);
+        expose({ el });
+        return () => [h('span'), h('button', { ...attrs, ref: el }, slots.default?.())];
+    },
+});
+
+describe('BaseSelect trigger element', () => {
+    // Regression: the trigger element used to be read off BaseButton's `$el`. A
+    // component's `$el` is its vnode's `el`, which is the root element only while the
+    // vnode tree and the DOM agree. Hydrating markup that no real SSR render produced
+    // -- a snapshot of an already-rendered page, say -- desyncs that walk and leaves
+    // `$el` on whatever node it landed on, in practice an empty text node. Opening
+    // then died on `$el.closest is not a function`, taking the whole select with it.
+    it('opens when the trigger vnode does not point at an element', async () => {
+        const w = mount(BaseSelect, {
+            props: { modelValue: 'apple', options, teleportDisabled: true },
+            global: {
+                provide: { [IconResolverKey as symbol]: () => '<svg />' },
+                stubs: { BaseButton: FragmentRootButton },
+            },
+            attachTo: document.body,
+        });
+        expect(w.findComponent(FragmentRootButton).vm.$el.nodeType).not.toBe(Node.ELEMENT_NODE);
+
+        await w.find('button').trigger('keydown', { key: 'ArrowDown' });
+
+        expect(w.find('[role="listbox"]').exists()).toBe(true);
+    });
+
+    it('anchors to the trigger button itself', () => {
+        const w = mountSelect();
+        expect(w.findComponent(BaseButton).vm.el).toBe(w.find('button').element);
     });
 });

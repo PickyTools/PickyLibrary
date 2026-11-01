@@ -185,7 +185,13 @@ const teleportTarget = computed<string | HTMLElement>(() =>
 const triggerRef = ref<InstanceType<typeof BaseButton> | null>(null);
 const dropdownRef = ref<HTMLElement | null>(null);
 
-const triggerEl = computed(() => (triggerRef.value?.$el as HTMLElement | undefined) ?? null);
+/*
+ * The trigger's own element, straight from BaseButton's template ref. Everything
+ * below anchors to it -- Floating UI measures it, `open` looks up the enclosing
+ * <dialog>, `choose` returns focus to it -- so it has to be the real element and
+ * not `$el`, which a mismatched hydration can leave pointing at a text node.
+ */
+const triggerEl = computed<HTMLElement | null>(() => triggerRef.value?.el ?? null);
 
 /*
  * Inside a modal, measure against the viewport rather than the enclosing boxes.

@@ -1,6 +1,7 @@
 <template>
     <component
         :is="isLink ? 'a' : 'button'"
+        ref="rootEl"
         :type="isLink ? undefined : htmlType"
         :href="isLink && !disabled ? href : undefined"
         :target="isLink ? target : undefined"
@@ -30,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useSlots } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs } from 'vue';
 import type { Color, HasDisabled, HasSize } from '../types';
 import { readableTextColor } from '../core/contrast';
 import { warnAboutThemeContrastOnce } from '../theme';
@@ -52,7 +53,13 @@ type RoundedSide = 'all' | 'left' | 'right' | 'none';
  */
 defineOptions({ name: 'BaseButton', inheritAttrs: false });
 
-defineSlots<{
+/*
+ * The declaration doubles as the value: `useSlots()` infers its type from the
+ * template, and with a template ref on the root that inference runs back through
+ * this component's own instance type and gives up (TS7022, silently `any` in the
+ * emitted declarations). Taking the slots from `defineSlots` types them outright.
+ */
+const slots = defineSlots<{
     /** Replaces the label. Pass `label` as well, as the accessible name. */
     default?(): unknown;
     prefix?(): unknown;
@@ -108,7 +115,6 @@ const props = withDefaults(
 const emit = defineEmits<{ (e: 'click', event: MouseEvent): void }>();
 
 const attrs = useAttrs();
-const slots = useSlots();
 
 // class goes on the outer element (above); everything else follows, minus class,
 // so it is not applied twice.
@@ -154,6 +160,22 @@ const customColorTokens = computed<Record<string, string> | undefined>(() => {
         '--picky-btn-ring-soft': base,
         '--picky-shadow-color': base,
     };
+});
+
+/*
+ * A template ref on the element itself, deliberately, rather than leaving callers to
+ * read `$el`. A component's `$el` is its vnode's `el`, which is the root element only
+ * while the vnode tree and the DOM agree; hydrating markup that no real SSR render
+ * produced desyncs that walk, and `$el` is then left on whatever node it landed on --
+ * in practice an empty text node, with no `closest`, `focus` or `getBoundingClientRect`
+ * on it. A template ref is assigned by the renderer from the element it created, so it
+ * is either that element or null.
+ */
+const rootEl = ref<HTMLElement | null>(null);
+
+defineExpose({
+    /** The rendered <button> or <a>, for callers that measure, focus or hit-test it. */
+    el: rootEl,
 });
 
 const showTempLabel = ref(false);

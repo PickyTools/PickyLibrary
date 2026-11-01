@@ -68,6 +68,8 @@ data attributes -- are documented in [STYLING.md](STYLING.md).
 - `prefix`
 - `suffix`
 
+**Exposed via template ref:** `el`
+
 ---
 
 ## BaseCheckbox

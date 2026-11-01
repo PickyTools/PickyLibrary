@@ -3,6 +3,36 @@
 The public API is still moving. In `0.x` a minor bump is the one that carries
 breaking changes.
 
+## 0.3.1
+
+### Fixed
+
+- **A select whose trigger had lost its element stopped working entirely.** Opening
+  threw `$el.closest is not a function`, and with the error thrown inside the click
+  handler the dropdown never appeared -- on every instance on the page, for as long
+  as the page lived.
+
+  BaseSelect read its trigger element off BaseButton's `$el`. A component's `$el` is
+  its vnode's `el`, and the renderer only keeps that pointing at the root element
+  while the vnode tree and the DOM agree. Hydrating markup that no real SSR render
+  produced breaks that agreement: a production build marks fragment and Teleport
+  boundaries with empty text nodes, which serialise to nothing, so markup captured
+  from an already-rendered page (a headless-browser prerender, say) is missing the
+  anchors the hydration walk looks for. The walk then desyncs and leaves `$el` on
+  whatever node it reached -- in practice an empty text node, which has no `closest`,
+  no `focus` and no `getBoundingClientRect`. Floating UI failed on the same node one
+  line later.
+
+  BaseButton now exposes the element through a template ref, which the renderer
+  assigns from the element it actually created, and BaseSelect anchors to that. The
+  select survives a `$el` that has drifted; it no longer has an opinion about how the
+  page was rendered.
+
+### Added
+
+- **`el` on BaseButton**, the rendered `<button>` or `<a>`, for callers that measure,
+  focus or hit-test it. `el` on BaseInput has always meant this; the two now match.
+
 ## 0.3.0
 
 ### Added

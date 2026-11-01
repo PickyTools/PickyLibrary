@@ -141,3 +141,18 @@ describe('BaseButton custom colour', () => {
         expect(w.attributes('style')).toBeUndefined();
     });
 });
+
+describe('BaseButton root element', () => {
+    // BaseSelect anchors its dropdown to this element, so it is part of the public
+    // surface, not an implementation detail. It is a template ref rather than `$el`
+    // because `$el` is only the root element while the vnode tree and the DOM agree.
+    it('exposes the rendered element', () => {
+        const w = mount(BaseButton, { props: { label: 'x' } });
+        expect(w.vm.el).toBe(w.find('button').element);
+    });
+
+    it('exposes the anchor when it renders as a link', () => {
+        const w = mount(BaseButton, { props: { label: 'x', href: '/somewhere' } });
+        expect(w.vm.el).toBe(w.find('a').element);
+    });
+});
