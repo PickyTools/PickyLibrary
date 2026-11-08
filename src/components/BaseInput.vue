@@ -56,15 +56,34 @@
             </span>
         </label>
 
-        <!-- role="alert" only for an error: a message that appears after submitting
-             should be announced, a static hint should not. -->
+        <!-- A hint is static text, so it is rendered only when there is one and it
+             is never announced. -->
+        <p v-if="hint && !hasError" :id="hintId" class="picky-input__message">
+            {{ hint }}
+        </p>
+
+        <!--
+            The error lives in its own region, and that region is in the document
+            from the first render, empty, with its role already on it.
+
+            A live region created together with its message is one several screen
+            readers never read out: the text has to change inside a region that was
+            already being watched. Putting `role="alert"` on at the same moment is
+            the same failure one step along, so the role is static too, which is
+            also why the hint above cannot share this element -- a static hint in a
+            live region would be announced on page load.
+
+            Empty, it is pulled out of the flow rather than hidden. `display: none`
+            and `visibility: hidden` both take an element out of the accessibility
+            tree, and then nothing is watching it at all. @see input.css.
+        -->
         <p
-            v-if="error || hint"
             :id="messageId"
-            :role="hasError ? 'alert' : undefined"
+            role="alert"
             class="picky-input__message"
+            :data-empty="hasError ? undefined : ''"
         >
-            {{ error || hint }}
+            {{ error }}
         </p>
     </div>
 </template>
@@ -172,10 +191,18 @@ const state = computed(() => {
 const generatedId = useId();
 const inputId = computed(() => props.id ?? generatedId);
 const messageId = computed(() => `${inputId.value}-message`);
+const hintId = computed(() => `${inputId.value}-hint`);
 
-// Only point at the message when there actually is one; otherwise aria-describedby
-// references an id that is not in the DOM.
-const describedBy = computed(() => (props.error || props.hint ? messageId.value : undefined));
+/*
+ * Only point at a message that has something in it. The error region is always in
+ * the document, so its id is always resolvable, but describing a field with an
+ * empty string tells a reader nothing.
+ */
+const describedBy = computed(() => {
+    if (props.error) return messageId.value;
+    if (props.hint) return hintId.value;
+    return undefined;
+});
 
 function onInput(event: Event) {
     const target = event.target as HTMLInputElement | HTMLTextAreaElement;

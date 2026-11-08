@@ -186,6 +186,28 @@
         color: var(--picky-color-text-muted);
     }
 
+    /* The error region is in the document from the first render, so that a message
+       arriving later changes the text inside a region a screen reader is already
+       watching. Empty, it has to take up no room: the wrapper is a flex column with
+       a row-gap, so an in-flow empty paragraph would add a line of space under every
+       field that has no error.
+
+       Visually hidden rather than `display: none` or `visibility: hidden`, both of
+       which take the element out of the accessibility tree -- and a live region
+       nothing is watching is the bug this element exists to avoid. Same recipe as
+       the checkbox's own input. */
+    .picky-input__message[data-empty] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
     .picky-input[data-state='error'] .picky-input__message {
         color: var(--picky-color-red-600);
     }

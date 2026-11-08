@@ -1,0 +1,168 @@
+{
+    "//": "One list of cases, rendered by both adapters. src/blade.test.ts renders the Vue side and compares. Add a case here and both sides have to answer for it.",
+
+    "aliases": {
+        "//": "Vue prop name -> Blade prop name, where the two differ on purpose.",
+        "modelValue": "value"
+    },
+
+    "cases": [
+        {
+            "name": "button/default",
+            "component": "BaseButton",
+            "view": "button",
+            "props": { "label": "Opslaan" }
+        },
+        {
+            "name": "button/every-attribute",
+            "component": "BaseButton",
+            "view": "button",
+            "props": {
+                "label": "Verstuur",
+                "size": "lg",
+                "variant": "outline",
+                "color": "danger",
+                "htmlType": "submit",
+                "roundedSide": "left",
+                "transitionRadius": true,
+                "shadow": "hard"
+            }
+        },
+        {
+            "name": "button/disabled",
+            "component": "BaseButton",
+            "view": "button",
+            "props": { "label": "Opslaan", "disabled": true }
+        },
+        {
+            "name": "button/link",
+            "component": "BaseButton",
+            "view": "button",
+            "props": { "label": "Open de kaart", "href": "/map", "target": "_blank", "rel": "noopener" }
+        },
+        {
+            "name": "button/disabled-link",
+            "component": "BaseButton",
+            "view": "button",
+            "props": { "label": "Open de kaart", "href": "/map", "disabled": true }
+        },
+        {
+            "name": "button/slot-takes-over-the-label",
+            "component": "BaseButton",
+            "view": "button",
+            "props": { "label": "Sluiten" },
+            "slots": { "default": "X" }
+        },
+        {
+            "name": "button/prefix-and-suffix",
+            "component": "BaseButton",
+            "view": "button",
+            "props": { "label": "Volgende" },
+            "slots": { "prefix": "Stap", "suffix": "nu" }
+        },
+
+        {
+            "name": "pill/default",
+            "component": "BasePill",
+            "view": "pill",
+            "props": { "label": "Nieuw" }
+        },
+        {
+            "name": "pill/every-attribute",
+            "component": "BasePill",
+            "view": "pill",
+            "props": { "label": "Concept", "size": "sm", "color": "warning", "background": "dark" }
+        },
+        {
+            "name": "pill/slot-takes-over-the-label",
+            "component": "BasePill",
+            "view": "pill",
+            "props": { "label": "Genegeerd" },
+            "slots": { "default": "12" }
+        },
+
+        {
+            "name": "input/default",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Naam", "modelValue": "Vice Beach" }
+        },
+        {
+            "name": "input/placeholder-names-it",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "placeholder": "Zoek een plek" }
+        },
+        {
+            "name": "input/required",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Naam", "required": true }
+        },
+        {
+            "name": "input/with-a-hint",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Naam", "hint": "Zoals het in het spel heet" }
+        },
+        {
+            "name": "input/with-an-error",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Naam", "error": "Dit veld is verplicht" }
+        },
+        {
+            "name": "input/an-error-wins-over-a-hint",
+            "component": "BaseInput",
+            "view": "input",
+            "props": {
+                "id": "veld",
+                "label": "Naam",
+                "hint": "Zoals het in het spel heet",
+                "error": "Dit veld is verplicht"
+            }
+        },
+        {
+            "name": "input/readonly",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Naam", "modelValue": "Vast", "readonly": true }
+        },
+        {
+            "name": "input/disabled",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Naam", "disabled": true }
+        },
+        {
+            "name": "input/every-attribute",
+            "component": "BaseInput",
+            "view": "input",
+            "props": {
+                "id": "veld",
+                "label": "Aantal",
+                "size": "sm",
+                "type": "number",
+                "name": "aantal",
+                "modelValue": 3,
+                "min": 1,
+                "max": 10,
+                "step": 1,
+                "autocomplete": "off"
+            }
+        },
+        {
+            "name": "input/textarea",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Beschrijving", "type": "textarea", "rows": 5, "modelValue": "Een strand." }
+        },
+        {
+            "name": "input/prefix-and-suffix",
+            "component": "BaseInput",
+            "view": "input",
+            "props": { "id": "veld", "label": "Prijs" },
+            "slots": { "prefix": "EUR", "suffix": "per maand" }
+        }
+    ]
+}

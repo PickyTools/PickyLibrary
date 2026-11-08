@@ -63,6 +63,40 @@ describe('BaseInput messages', () => {
         expect(mount(BaseInput, { props: { label: 'x', error: 'Invalid' } }).find('input').attributes('aria-invalid')).toBe('true');
     });
 
+    /*
+     * Regression: the message sat behind a `v-if`, so the element carrying
+     * role="alert" was created at the same moment as its text. Several screen
+     * readers announce nothing in that case -- the region has to be in the
+     * document first and the text has to change inside it.
+     *
+     * The identity check at the end is the one that matters. A region that is
+     * replaced by a new element on every error is a region that was never being
+     * watched, and every other assertion here would still pass.
+     */
+    it('keeps the live region in the document before there is an error', async () => {
+        const w = mount(BaseInput, { props: { label: 'x' } });
+        const before = w.find('[role="alert"]');
+
+        expect(before.exists()).toBe(true);
+        expect(before.text()).toBe('');
+        expect(before.attributes('data-empty')).toBe('');
+
+        await w.setProps({ error: 'Invalid' });
+
+        const after = w.find('[role="alert"]');
+        expect(after.text()).toBe('Invalid');
+        expect(after.attributes('data-empty')).toBeUndefined();
+        expect(after.element).toBe(before.element);
+    });
+
+    // A hint must not share the live region, or it would be read out on page load.
+    it('keeps a hint out of the live region', () => {
+        const w = mount(BaseInput, { props: { label: 'x', hint: 'Optional' } });
+
+        expect(w.find('[role="alert"]').text()).toBe('');
+        expect(w.findAll('p').some((p) => p.text() === 'Optional' && !p.attributes('role'))).toBe(true);
+    });
+
     it('prefers the error over the hint', () => {
         const w = mount(BaseInput, { props: { label: 'x', hint: 'Optional', error: 'Invalid' } });
         expect(w.find('p').text()).toBe('Invalid');

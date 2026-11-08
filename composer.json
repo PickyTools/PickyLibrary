@@ -1,0 +1,35 @@
+{
+    "name": "pickytools/pickylibrary",
+    "description": "The Blade adapter for PickyLibrary: the same components, the same stylesheet, server-rendered by PHP.",
+    "license": "MIT",
+    "keywords": ["laravel", "blade", "components", "ui", "accessible", "design-system"],
+    "homepage": "https://github.com/PickyTools/PickyLibrary",
+    "authors": [
+        {
+            "name": "Jochum",
+            "email": "jochumjurre@protonmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0 || ^12.0",
+        "illuminate/view": "^11.0 || ^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PickyLibrary\\": "src-php/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PickyLibrary\\PickyLibraryServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

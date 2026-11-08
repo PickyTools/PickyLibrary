@@ -8,3 +8,7 @@ coverage
 *.tgz
 test-results
 playwright-report
+
+# PHP dependencies, for the Blade adapter and its conformance renderer.
+/vendor
+/composer.lock

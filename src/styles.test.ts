@@ -34,6 +34,22 @@ const SET_ELSEWHERE = new Set([
 ]);
 
 describe('the stylesheets', () => {
+    /*
+     * The error region is in the document from the first render so that a screen
+     * reader is already watching it when the text arrives. Both of these take an
+     * element out of the accessibility tree, which would leave the region in the
+     * markup and watched by nobody -- the exact bug it was built to avoid, and one
+     * no DOM test can see, because happy-dom applies no stylesheets.
+     */
+    it('does not hide an input live region from assistive technology', () => {
+        const rule = css.match(/\.picky-input__message\[data-empty\]\s*\{[^}]*\}/);
+
+        expect(rule, 'the empty-message rule has gone').toBeTruthy();
+        expect(rule![0]).not.toMatch(/display:\s*none/);
+        expect(rule![0]).not.toMatch(/visibility:\s*hidden/);
+        expect(rule![0], 'it still has to leave the flow').toMatch(/position:\s*absolute/);
+    });
+
     it('declare every token they read', () => {
         const used = new Set([...css.matchAll(/var\((--picky-[a-z0-9-]+)/g)].map((m) => m[1]));
         const declared = new Set([...css.matchAll(/(--picky-[a-z0-9-]+)\s*:/g)].map((m) => m[1]));

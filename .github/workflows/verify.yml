@@ -28,6 +28,17 @@ jobs:
       - name: Install
         run: npm ci
 
+      # The Blade adapter is PHP, and src/blade.test.ts renders it to compare
+      # against the Vue one. Without PHP here that test skips itself, which is
+      # the one way the two adapters could drift with a green build.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install the PHP dependencies
+        run: composer install --no-interaction --no-progress
+
       # The example is a real consumer of the package, and it is what catches a
       # break in the public API. It is linked with `file:..`, so it needs its own
       # install.

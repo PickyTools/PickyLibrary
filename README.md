@@ -112,6 +112,23 @@ dropdown, a checkbox's tick — is autocompleted rather than guessed.
 Props, events, slots and template refs for all twelve are listed in
 [API.md](API.md), which is generated from the components themselves.
 
+## Laravel and Blade
+
+The components are available to Blade as well, server-rendered by PHP, from the
+same stylesheet:
+
+```bash
+composer require pickytools/pickylibrary
+```
+
+```blade
+<x-picky::button label="Opslaan" html-type="submit" />
+```
+
+`BaseButton`, `BasePill` and `BaseInput` so far. A conformance test renders every
+case with both adapters and fails when the markup disagrees, so the two cannot
+quietly drift apart. See [BLADE.md](BLADE.md).
+
 ## Example
 
 `example/` is a working consumer app: a kitchen sink of every component, with live controls

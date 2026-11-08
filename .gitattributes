@@ -1,0 +1,28 @@
+# What `composer require` downloads.
+#
+# Composer takes a zip of the tag, so without this a PHP project would pull the
+# Vue sources, the test suite, the example app and the screenshots down with the
+# four files it actually uses. The npm side has its own allowlist, in the `files`
+# field of package.json.
+/.github            export-ignore
+/.editorconfig      export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/conformance        export-ignore
+/coverage           export-ignore
+/dist               export-ignore
+/example            export-ignore
+/scripts            export-ignore
+/src                export-ignore
+/tests              export-ignore
+/eslint.config.js   export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore
+/playwright.config.ts export-ignore
+/tsconfig.json      export-ignore
+/tsconfig.build.json export-ignore
+/vite.config.ts     export-ignore
+/vitest.config.ts   export-ignore
+/API.md             export-ignore
+/ARCHITECTURE.md    export-ignore
+/STYLING.md         export-ignore

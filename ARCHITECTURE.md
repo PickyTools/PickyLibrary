@@ -9,7 +9,14 @@ Three layers:
 src/core/       framework-free TypeScript: behaviour, keyboard, ARIA, types
 src/styles/     one plain stylesheet: everything visual
 src/components/ the Vue adapter: refs, templates, DOM
+resources/views/ the Blade adapter: the same markup, rendered by PHP
 ```
+
+The second adapter is no longer hypothetical. `resources/views/components/` holds
+the Blade one, and it is what the split above was for: ten of the twelve components
+need no core module, so each is the same contract written as markup. `src/blade.test.ts`
+renders every case in `conformance/cases.json` with both adapters and fails when
+they disagree. @see [BLADE.md](BLADE.md).
 
 ## The one rule
 
@@ -97,6 +104,10 @@ These cost nothing today and are expensive to retrofit:
 
 Split the package into `@picky/core`, `@picky/styles` and one package per
 framework. The boundaries already exist; only the packaging changes.
+
+The Blade adapter took this route already, and found the boundaries where the doc
+said they were: it reuses the stylesheet byte for byte and needed nothing from
+`src/core/` for the three components it covers so far.
 
 The one thing to build at that point is a `normalizeProps` step between core and
 the adapter. Core returns plain objects with DOM attribute names; Vue and React

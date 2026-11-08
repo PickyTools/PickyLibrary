@@ -3,6 +3,81 @@
 The public API is still moving. In `0.x` a minor bump is the one that carries
 breaking changes.
 
+## 0.4.0
+
+### Fixed
+
+- **`BaseInput` announced an error to nobody.** The message sat behind a `v-if`, so
+  the element carrying `role="alert"` was created at the same moment as its text,
+  and several screen readers announce nothing at all in that case: the text has to
+  change inside a region that was already being watched.
+
+  The error now has a region of its own, in the document from the first render,
+  empty, with its role already on it. A hint no longer shares that element -- a
+  static hint in a live region would be read out on page load, which is the other
+  half of the same problem.
+
+  Empty, the region is pulled out of the flow with the same visually-hidden recipe
+  the checkbox's input uses, rather than with `display: none` or
+  `visibility: hidden`. Both of those take an element out of the accessibility tree,
+  which would leave a live region in the markup that nothing is watching -- the bug
+  this was built to avoid. `src/styles.test.ts` guards that, because no DOM test can
+  see it: happy-dom applies no stylesheets.
+
+  Found by using the library in a real application rather than by reading it, which
+  is the argument for having a second consumer. The regression test checks that the
+  region is the *same element* before and after the error arrives; every other
+  assertion about it passed while the bug was there.
+
+  **Breaking, in the markup rather than the API.** No prop changed, but a hint's id
+  is now `{id}-hint` where it was `{id}-message`, the error keeps `{id}-message`,
+  and `.picky-input` always contains one more `<p>` than it used to. Anything
+  selecting on either will need a look.
+
+### Added
+
+- **A Blade adapter.** `<x-picky::button>`, `<x-picky::pill>` and
+  `<x-picky::input>` render the same markup as their Vue counterparts, from PHP,
+  with no JavaScript on the page. Installed with `composer require
+  pickytools/pickylibrary`; the stylesheet still comes from npm, because it is
+  built from `src/styles/` and there should be exactly one of it.
+
+  The reason is reach rather than novelty: a Laravel application is mostly Blade,
+  and a base library that only covers the Vue islands dresses the smaller half of
+  every page while the two halves drift apart.
+
+  It cost almost nothing to add because the architecture already allowed for it.
+  Ten of the twelve components need no `core/` module at all -- their appearance is
+  decided by `data-` attributes in CSS rather than by computed class names -- so a
+  Blade component is the same contract written in the one language a Blade page can
+  execute. `BaseToast` and `BaseSelect` are the two with real behaviour, and theirs
+  already sits framework-free in `src/core/`.
+
+  Four things differ on this side, all because there is no JavaScript and no
+  reactivity: `modelValue` is `value`, an input with a label needs an explicit
+  `id`, and a button has no `tempLabel` and no `color="custom"`. See
+  [BLADE.md](BLADE.md).
+
+- **A conformance test, `src/blade.test.ts`.** Every case in
+  `conformance/cases.json` is rendered by both adapters, reduced to one canonical
+  form and compared. It catches a changed attribute, a misspelled class and a
+  dropped `aria-*`.
+
+  Two implementations of one contract drift, and nothing either suite already had
+  could see it: the Vue tests pass with no Blade view in the repository at all. The
+  canonical form is built in one language rather than on both sides, because two
+  normalisers to keep in step would be the same problem one level down.
+
+  CI installs PHP so the comparison always runs. Locally the file skips itself when
+  PHP or `vendor/` is missing, and says why -- a silent skip is the one way these
+  two could drift with a green build.
+
+### Note
+
+- **0.3.1 never reached npm.** It was committed and left there, so upgrading from
+  the published `0.3.0` brings its select fix and its `el` on `BaseButton` along
+  with everything above. Its own section below is unchanged.
+
 ## 0.3.1
 
 ### Fixed
